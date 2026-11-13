@@ -277,12 +277,12 @@ def construir(p: Params):
             P(0,                              0),
             P(0,                              p.cola_y),
             P(p.cola_x,                       p.ombro_y),
-            P(p.lado_x,                       p.ombro_y),
+            # P(p.lado_x, p.ombro_y) removido: pertence só ao vinco, não ao corte
             P(fx0,                            fy),
             P(fx0 + p.fundo_aba_recuo,        ty),
             P(W - fx0 - p.fundo_aba_recuo,    ty),
             P(W - fx0,                        fy),
-            P(W - p.lado_x,                   p.ombro_y),
+            # P(W - p.lado_x, p.ombro_y) removido: pertence só ao vinco, não ao corte
             P(W - p.cola_x,                   p.ombro_y),
             P(W,                              p.cola_y),
             P(W,                              0),
