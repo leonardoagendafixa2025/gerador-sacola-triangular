@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sacola Triangular 3D – Montagem Completa com as Tampas | Primacor</title>
+<title>Sacola Triangular 3D – Montagem 100% Exata das Tampas | Primacor</title>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
   body {
@@ -109,7 +109,6 @@
     font-size: 11px; color: #475569; text-align: right; line-height: 1.8;
   }
 </style>
-<!-- Bibliotecas locais 100% offline -->
 <script src="libs/three.min.js"></script>
 <script src="libs/OrbitControls.classic.js"></script>
 </head>
@@ -119,7 +118,7 @@
 
 <div id="painel">
   <div class="marca">Primacor Gráfica</div>
-  <h1>Sacola Triangular 3D – Montagem</h1>
+  <h1>Montagem Exata da Sacola 3D</h1>
 
   <!-- Slider de Encaixe / Explosão -->
   <div class="destaque-anim">
@@ -179,13 +178,13 @@
   <div id="metricas">
     <div><span>Altura cume sacola:</span> <b id="mAltura">—</b></div>
     <div><span>Base no chão (B × H):</span> <b id="mBase">—</b></div>
-    <div><span>Tampa Lateral:</span> <b>320 × 195 mm (Faca original)</b></div>
-    <div><span>Abas de COLA:</span> <b>2 por tampa (dobradas a 90°)</b></div>
+    <div><span>Tampa na base:</span> <b id="mTampaBase">—</b></div>
+    <div><span>Tampa no topo:</span> <b id="mTampaTop">—</b></div>
   </div>
 </div>
 
 <div id="vistas">
-  <button class="btn-vista" onclick="setCameraView('lateral')">👁 Lateral (Ver Tampa)</button>
+  <button class="btn-vista" onclick="setCameraView('lateral')">👁 Lateral (Encaixe)</button>
   <button class="btn-vista" onclick="setCameraView('persp')">👁 Perspectiva</button>
   <button class="btn-vista" onclick="setCameraView('frente')">👁 Frente</button>
   <button class="btn-vista" onclick="setCameraView('topo')">👁 Topo</button>
@@ -193,8 +192,8 @@
 
 <div id="legenda">
   <div><span class="dot" style="background:#f8fafc; border:1px solid #94a3b8"></span> <b>Peça 1 (Corpo):</b> Frente + Fundo + Trás + Alças</div>
-  <div><span class="dot" style="background:#38bdf8"></span> <b>Peça 2 (Tampa):</b> Polígonos exatos dobrados pelo sistema</div>
-  <div><span class="dot" style="background:#f59e0b"></span> <b>Abas de COLA:</b> Painel 4 e 5 dobrados a 90°</div>
+  <div><span class="dot" style="background:#38bdf8"></span> <b>Peça 2 (Tampa):</b> Fechamento lateral vertical</div>
+  <div><span class="dot" style="background:#f59e0b"></span> <b>Abas de COLA:</b> Coladas por dentro nas paredes inclinadas</div>
   <div><span class="dot" style="background:#22c55e"></span> <b>Vincos de dobra CAD</b></div>
 </div>
 
@@ -228,8 +227,7 @@ controls.minDistance = 80;
 controls.maxDistance = 4000;
 
 // Luzes
-const ambLight = new THREE.AmbientLight(0xffffff, 0.7);
-scene.add(ambLight);
+scene.add(new THREE.AmbientLight(0xffffff, 0.7));
 
 const keyLight = new THREE.DirectionalLight(0xffffff, 1.25);
 keyLight.position.set(500, 1000, 600);
@@ -268,11 +266,11 @@ let params = {
   H: 400,
   aba: 75,
   foldProgress: 1.0, // 0 = plano, 1 = dobrado
-  explode: 0.0       // 0 = montada, 1 = separada
+  explode: 0.0       // 0 = montada, 1 = explodida
 };
 
 // =============================================================================
-// ESTRUTURA CAD DA TAMPA (ENVIADA PELO USUÁRIO)
+// ÁRVORE CAD DA TAMPA (ORIGINAL ENVIADA PELO USUÁRIO)
 // =============================================================================
 const TAMPA_CAD = {
   width: 320,
@@ -395,15 +393,12 @@ function criarPainelAlca(w, h, mat, matCorte) {
 
   const ptsFuro = furo.getPoints();
   const geoFuro = new THREE.BufferGeometry().setFromPoints(ptsFuro.map(p => new THREE.Vector3(p.x, p.y, 0.1)));
-  const borda = new THREE.LineLoop(geoFuro, matCorte);
-  mesh.add(borda);
+  mesh.add(new THREE.LineLoop(geoFuro, matCorte));
 
   return mesh;
 }
 
-// =============================================================================
-// CONSTRUÇÃO HIERÁRQUICA DA TAMPA CAD
-// =============================================================================
+// Constrói a Tampa CAD hierárquica
 function construirTampaHierarquica(mats) {
   const pivots = [];
   const rootGroup = new THREE.Group();
@@ -419,7 +414,7 @@ function construirTampaHierarquica(mats) {
     const mesh = new THREE.Mesh(geo, isCola ? mats.tampaCola : mats.tampaPapel);
     mesh.castShadow = true; mesh.receiveShadow = true;
 
-    // Linha de corte vermelha em volta do painel
+    // Contorno vermelho de corte
     const pts = polygon.map(p => new THREE.Vector3(p.x, p.y, TAMPA_CAD.thickness + 0.1));
     pts.push(pts[0]);
     mesh.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), mats.corte));
@@ -441,7 +436,7 @@ function construirTampaHierarquica(mats) {
       const axis = new THREE.Vector3(ax, ay, 0).normalize();
       pivots.push({ panelId: id, pivot: piv, axis, sign: node.sign, target: node.target });
 
-      // Linha de vinco verde
+      // Vinco verde
       const pA = new THREE.Vector3(0, 0, TAMPA_CAD.thickness + 0.2);
       const pB = new THREE.Vector3(ax, ay, TAMPA_CAD.thickness + 0.2);
       piv.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints([pA, pB]), mats.vinco));
@@ -460,11 +455,9 @@ function construirTampaHierarquica(mats) {
   }
 
   visit(TAMPA_CAD.rootId, rootGroup);
-
   return { rootGroup, pivots };
 }
 
-// Aplica ângulo de dobra da tampa
 function setTampaFold(pivots, t) {
   for (const p of pivots) {
     const target = -p.target * p.sign;
@@ -509,7 +502,7 @@ function reconstruirModelo() {
   const hB = B / 2;
   const hApex = Math.sqrt(Math.max(10, A * A - hB * hB));
 
-  // 1. CORPO DA SACOLA (PEÇA 1)
+  // 1. CORPO DA SACOLA
   const bFrontEsq = new THREE.Vector3(-hH, 0,  hB);
   const bFrontDir = new THREE.Vector3( hH, 0,  hB);
   const bBackEsq  = new THREE.Vector3(-hH, 0, -hB);
@@ -540,48 +533,75 @@ function reconstruirModelo() {
   alcaBack.rotation.y = Math.PI;
   groupCorpo.add(alcaBack);
 
-  // 2. AS DUAS TAMPAS (PEÇAS LATERAIS DO CAD)
+  // 2. MONTAGEM EXATA DAS TAMPAS LATERAIS
+  // No CAD:
+  // - Y=180 é a base larga de 150mm (assenta no chão Y=0 da sacola, de Z=-75 a Z=+75)
+  // - Y=0 é o topo estreito de 60mm (fica na altura Y=180 da sacola)
+  // - Asas dobram em +Z do CAD (que apontam para dentro da sacola)
   const distExplode = params.explode * 160;
 
-  // Escala para ajustar ao tamanho A, B atual (padrão é B=150, alt=180)
-  const scaleX = (B / 150.0);
-  const scaleY = (Math.min(hApex * 0.75, 180) / 180.0);
+  // Escalas proporcionais a B e A
+  const scaleB = (B / 150.0);
+  const scaleY = (Math.min(hApex * 0.75, 180.0) / 180.0);
 
-  // Tampa Esquerda
+  // -------------------------------------------------------------------------
+  // TAMPA ESQUERDA (em X = -hH - distExplode):
+  // -------------------------------------------------------------------------
   tampaEsqObj = construirTampaHierarquica(mats);
   setTampaFold(tampaEsqObj.pivots, params.foldProgress);
 
-  const carrierEsq = new THREE.Group();
-  carrierEsq.add(tampaEsqObj.rootGroup);
-  // Alinha o centro da tampa no eixo lateral
-  tampaEsqObj.rootGroup.position.set(-160, 0, 0); // centraliza largura 320 em torno da raiz
-  carrierEsq.rotation.y = -Math.PI / 2;
-  carrierEsq.rotation.z = Math.PI / 2;
-  carrierEsq.position.set(-hH - distExplode, 0, 0);
-  groupTampaEsq.add(carrierEsq);
+  const wrapperEsq = new THREE.Group();
+  wrapperEsq.matrixAutoUpdate = false;
 
-  // Tampa Direita (espelhada)
+  // Matriz de alinhamento matemático perfeito:
+  // X_bag = -hH - distExplode + Z_cad
+  // Y_bag = (180 - Y_cad) * scaleY
+  // Z_bag = (X_cad - 160) * scaleB
+  const mE = new THREE.Matrix4();
+  mE.set(
+    0,           0,       1,  -hH - distExplode,
+    0,     -scaleY,       0,   180.0 * scaleY,
+    scaleB,      0,       0,  -160.0 * scaleB,
+    0,           0,       0,   1
+  );
+  wrapperEsq.matrix.copy(mE);
+  wrapperEsq.add(tampaEsqObj.rootGroup);
+  groupTampaEsq.add(wrapperEsq);
+
+  // -------------------------------------------------------------------------
+  // TAMPA DIREITA (em X = +hH + distExplode):
+  // -------------------------------------------------------------------------
   tampaDirObj = construirTampaHierarquica(mats);
   setTampaFold(tampaDirObj.pivots, params.foldProgress);
 
-  const carrierDir = new THREE.Group();
-  carrierDir.add(tampaDirObj.rootGroup);
-  tampaDirObj.rootGroup.position.set(-160, 0, 0);
-  carrierDir.rotation.y = Math.PI / 2;
-  carrierDir.rotation.z = Math.PI / 2;
-  carrierDir.position.set(hH + distExplode, 0, 0);
-  groupTampaDir.add(carrierDir);
+  const wrapperDir = new THREE.Group();
+  wrapperDir.matrixAutoUpdate = false;
 
-  // Guias de montagem
+  // Matriz de alinhamento para o lado direito:
+  // X_bag = hH + distExplode - Z_cad (aponta para dentro)
+  // Y_bag = (180 - Y_cad) * scaleY
+  // Z_bag = (X_cad - 160) * scaleB
+  const mD = new THREE.Matrix4();
+  mD.set(
+    0,           0,      -1,   hH + distExplode,
+    0,     -scaleY,       0,   180.0 * scaleY,
+    scaleB,      0,       0,  -160.0 * scaleB,
+    0,           0,       0,   1
+  );
+  wrapperDir.matrix.copy(mD);
+  wrapperDir.add(tampaDirObj.rootGroup);
+  groupTampaDir.add(wrapperDir);
+
+  // Guias tracejadas quando explodida
   if (params.explode > 0.04) {
-    const pOrigE = new THREE.Vector3(-hH, 90, 0);
-    const pDestE = new THREE.Vector3(-hH - distExplode, 90, 0);
+    const pOrigE = new THREE.Vector3(-hH, 90 * scaleY, 0);
+    const pDestE = new THREE.Vector3(-hH - distExplode, 90 * scaleY, 0);
     const guiaE = criarLinha(pOrigE, pDestE, mats.guia);
     guiaE.computeLineDistances();
     groupCorpo.add(guiaE);
 
-    const pOrigD = new THREE.Vector3(hH, 90, 0);
-    const pDestD = new THREE.Vector3(hH + distExplode, 90, 0);
+    const pOrigD = new THREE.Vector3(hH, 90 * scaleY, 0);
+    const pDestD = new THREE.Vector3(hH + distExplode, 90 * scaleY, 0);
     const guiaD = criarLinha(pOrigD, pDestD, mats.guia);
     guiaD.computeLineDistances();
     groupCorpo.add(guiaD);
@@ -590,6 +610,8 @@ function reconstruirModelo() {
   // Métricas
   document.getElementById('mAltura').textContent = (hApex + aba).toFixed(0) + ' mm';
   document.getElementById('mBase').textContent = B.toFixed(0) + ' × ' + H.toFixed(0) + ' mm';
+  document.getElementById('mTampaBase').textContent = B.toFixed(0) + ' mm (no chão)';
+  document.getElementById('mTampaTop').textContent = (60 * scaleB).toFixed(0) + ' mm (a 180mm alt)';
 }
 
 // =============================================================================
@@ -623,13 +645,7 @@ function syncInputs() {
       txtExp.style.color = '#f59e0b';
     }
 
-    if (tampaEsqObj && tampaDirObj) {
-      setTampaFold(tampaEsqObj.pivots, params.foldProgress);
-      setTampaFold(tampaDirObj.pivots, params.foldProgress);
-      reconstruirModelo();
-    } else {
-      reconstruirModelo();
-    }
+    reconstruirModelo();
   }
 
   [slA, slB, slH, slFold, slExplode].forEach(el => {
