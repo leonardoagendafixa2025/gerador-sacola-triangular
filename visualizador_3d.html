@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sacola Triangular 3D – Faca Original Primacor | 1:1</title>
+<title>Sacola Triangular 3D – Montagem Completa com as Tampas | Primacor</title>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
   body {
@@ -109,6 +109,7 @@
     font-size: 11px; color: #475569; text-align: right; line-height: 1.8;
   }
 </style>
+<!-- Bibliotecas locais 100% offline -->
 <script src="libs/three.min.js"></script>
 <script src="libs/OrbitControls.classic.js"></script>
 </head>
@@ -118,18 +119,31 @@
 
 <div id="painel">
   <div class="marca">Primacor Gráfica</div>
-  <h1>Faca Original – 2 Peças em 3D</h1>
+  <h1>Sacola Triangular 3D – Montagem</h1>
 
   <!-- Slider de Encaixe / Explosão -->
   <div class="destaque-anim">
     <div class="label-row">
-      <span style="color:#38bdf8; font-weight:700;">Encaixe da Peça Lateral</span>
+      <span style="color:#38bdf8; font-weight:700;">Encaixe das Tampas Laterais</span>
       <b><span id="txtExplode">Montada (Colada)</span></b>
     </div>
     <input type="range" id="slExplode" min="0" max="100" value="0" step="1">
     <div style="display:flex; justify-content:space-between; font-size:10px; color:#64748b; margin-top:2px;">
       <span>0% Colada no Corpo</span>
-      <span>100% Peça Solta no Ar</span>
+      <span>100% Peças Soltas</span>
+    </div>
+  </div>
+
+  <!-- Slider de Dobra da Tampa -->
+  <div class="destaque-anim" style="background:rgba(34,197,94,0.08); border-color:rgba(34,197,94,0.25);">
+    <div class="label-row">
+      <span style="color:#22c55e; font-weight:700;">Dobra da Tampa (Kinematics)</span>
+      <b><span id="txtFold">100% Fechada</span></b>
+    </div>
+    <input type="range" id="slFold" min="0" max="100" value="100" step="1" style="accent-color:#22c55e;">
+    <div style="display:flex; justify-content:space-between; font-size:10px; color:#64748b; margin-top:2px;">
+      <span>0% Plano na Mesa</span>
+      <span>100% Dobrada 3D</span>
     </div>
   </div>
 
@@ -157,14 +171,6 @@
     <input type="range" id="slH" min="150" max="700" value="400" step="5">
   </div>
 
-  <div class="grupo-campo">
-    <div class="label-row">
-      <span>Dobra / Sanfona da Lateral</span>
-      <b><span id="txtSanfona">100</span>%</b>
-    </div>
-    <input type="range" id="slSanfona" min="0" max="100" value="100" step="1">
-  </div>
-
   <div class="botoes-visualizacao">
     <button class="btn-acao ativo" id="modoReal" onclick="setModo('real')">Cores Reais</button>
     <button class="btn-acao" id="modoFaca" onclick="setModo('faca')">Faca Técnica</button>
@@ -173,23 +179,23 @@
   <div id="metricas">
     <div><span>Altura cume sacola:</span> <b id="mAltura">—</b></div>
     <div><span>Base no chão (B × H):</span> <b id="mBase">—</b></div>
-    <div><span>Lateral (Base B):</span> <b id="mLateralB">—</b></div>
-    <div><span>Lateral (Topo cintura):</span> <b id="mLateralTop">—</b></div>
+    <div><span>Tampa Lateral:</span> <b>320 × 195 mm (Faca original)</b></div>
+    <div><span>Abas de COLA:</span> <b>2 por tampa (dobradas a 90°)</b></div>
   </div>
 </div>
 
 <div id="vistas">
-  <button class="btn-vista" onclick="setCameraView('lateral')">👁 Lateral (Faca Original)</button>
-  <button class="btn-vista" onclick="setCameraView('persp')">👁 Lateral / Encaixe</button>
+  <button class="btn-vista" onclick="setCameraView('lateral')">👁 Lateral (Ver Tampa)</button>
+  <button class="btn-vista" onclick="setCameraView('persp')">👁 Perspectiva</button>
   <button class="btn-vista" onclick="setCameraView('frente')">👁 Frente</button>
   <button class="btn-vista" onclick="setCameraView('topo')">👁 Topo</button>
 </div>
 
 <div id="legenda">
-  <div><span class="dot" style="background:#f8fafc; border:1px solid #94a3b8"></span> <b>Peça 1 (Corpo):</b> Tira única com 5 painéis</div>
-  <div><span class="dot" style="background:#38bdf8"></span> <b>Peça 2 (Lateral):</b> Fole trapezoidal idêntico ao PDF</div>
-  <div><span class="dot" style="background:#f59e0b"></span> <b>Abas de COLA:</b> Recortes exatos com texto "COLA"</div>
-  <div><span class="dot" style="background:#22c55e"></span> <b>Vincos de dobra da faca</b></div>
+  <div><span class="dot" style="background:#f8fafc; border:1px solid #94a3b8"></span> <b>Peça 1 (Corpo):</b> Frente + Fundo + Trás + Alças</div>
+  <div><span class="dot" style="background:#38bdf8"></span> <b>Peça 2 (Tampa):</b> Polígonos exatos dobrados pelo sistema</div>
+  <div><span class="dot" style="background:#f59e0b"></span> <b>Abas de COLA:</b> Painel 4 e 5 dobrados a 90°</div>
+  <div><span class="dot" style="background:#22c55e"></span> <b>Vincos de dobra CAD</b></div>
 </div>
 
 <div id="dica">
@@ -221,7 +227,7 @@ controls.dampingFactor = 0.06;
 controls.minDistance = 80;
 controls.maxDistance = 4000;
 
-// Iluminação de estúdio
+// Luzes
 const ambLight = new THREE.AmbientLight(0xffffff, 0.7);
 scene.add(ambLight);
 
@@ -240,7 +246,7 @@ const backLight = new THREE.DirectionalLight(0xffffff, 0.45);
 backLight.position.set(0, 300, -800);
 scene.add(backLight);
 
-// Chão com sombra
+// Chão
 const groundGeo = new THREE.PlaneGeometry(6000, 6000);
 const groundMat = new THREE.ShadowMaterial({ opacity: 0.35 });
 const ground = new THREE.Mesh(groundGeo, groundMat);
@@ -253,7 +259,7 @@ gridHelper.position.y = -0.5;
 scene.add(gridHelper);
 
 // =============================================================================
-// PARÂMETROS GLOBAIS
+// PARÂMETROS
 // =============================================================================
 let modoVisualizacao = 'real';
 let params = {
@@ -261,43 +267,82 @@ let params = {
   B: 150,
   H: 400,
   aba: 75,
-  sanfona: 1.0, // 0 = plano, 1 = dobrado em 3D
-  explode: 0.0  // 0 = montado, 1 = explodido
+  foldProgress: 1.0, // 0 = plano, 1 = dobrado
+  explode: 0.0       // 0 = montada, 1 = separada
 };
 
 // =============================================================================
-// MATERIAIS
+// ESTRUTURA CAD DA TAMPA (ENVIADA PELO USUÁRIO)
 // =============================================================================
+const TAMPA_CAD = {
+  width: 320,
+  height: 195,
+  rootId: "panel-ac1d5c30",
+  thickness: 0.5,
+  tree: {
+    "panel-ac1d5c30": {
+      polygon: [{"x":85,"y":180},{"x":130,"y":0},{"x":190,"y":0},{"x":235,"y":180}],
+      parent: null, hinge: null, sign: 1, target: 0,
+      children: ["panel-6f5dc360","panel-7c6543f8","panel-03b4a8a0"]
+    },
+    "panel-7c6543f8": { // Asa Esquerda
+      polygon: [{"x":85,"y":180},{"x":73.288,"y":165},{"x":0,"y":71.134},{"x":0,"y":0},{"x":130,"y":0}],
+      parent: "panel-ac1d5c30",
+      hinge: {"a":{"x":85,"y":180},"b":{"x":130,"y":0}},
+      sign: -1, target: Math.PI/2,
+      children: ["panel-4a9841a6"]
+    },
+    "panel-6f5dc360": { // Asa Direita
+      polygon: [{"x":235,"y":180},{"x":190,"y":0},{"x":320,"y":0},{"x":320,"y":71.134},{"x":246.712,"y":165}],
+      parent: "panel-ac1d5c30",
+      hinge: {"a":{"x":190,"y":0},"b":{"x":235,"y":180}},
+      sign: -1, target: Math.PI/2,
+      children: ["panel-111b4378"]
+    },
+    "panel-111b4378": { // Aba de Cola Direita
+      polygon: [{"x":282.632,"y":165},{"x":246.712,"y":165},{"x":320,"y":71.134},{"x":320,"y":155.658}],
+      parent: "panel-6f5dc360",
+      hinge: {"a":{"x":246.712,"y":165},"b":{"x":320,"y":71.134}},
+      sign: 1, target: Math.PI/2,
+      children: []
+    },
+    "panel-4a9841a6": { // Aba de Cola Esquerda
+      polygon: [{"x":37.369,"y":165},{"x":0,"y":155.658},{"x":0,"y":71.134},{"x":73.288,"y":165}],
+      parent: "panel-7c6543f8",
+      hinge: {"a":{"x":0,"y":71.134},"b":{"x":73.288,"y":165}},
+      sign: 1, target: Math.PI/2,
+      children: []
+    },
+    "panel-03b4a8a0": { // Aba Superior 15mm
+      polygon: [{"x":85,"y":180},{"x":235,"y":180},{"x":223.288,"y":195},{"x":96.712,"y":195}],
+      parent: "panel-ac1d5c30",
+      hinge: {"a":{"x":85,"y":180},"b":{"x":235,"y":180}},
+      sign: 1, target: Math.PI/2,
+      children: []
+    }
+  }
+};
+
+// Materiais
 function criarMateriais() {
   if (modoVisualizacao === 'real') {
     return {
-      corpoFrente: new THREE.MeshStandardMaterial({
-        color: 0xf8fafc, roughness: 0.35, metalness: 0.05, side: THREE.DoubleSide
-      }),
-      corpoCostas: new THREE.MeshStandardMaterial({
-        color: 0xf1f5f9, roughness: 0.35, metalness: 0.05, side: THREE.DoubleSide
-      }),
-      corpoFundo: new THREE.MeshStandardMaterial({
-        color: 0xe2e8f0, roughness: 0.4, metalness: 0.05, side: THREE.DoubleSide
-      }),
-      lateralCorpo: new THREE.MeshStandardMaterial({
-        color: 0x38bdf8, roughness: 0.35, metalness: 0.08, side: THREE.DoubleSide
-      }),
-      abaCola: new THREE.MeshStandardMaterial({
-        color: 0xf59e0b, roughness: 0.45, metalness: 0.1, side: THREE.DoubleSide
-      }),
+      corpoFrente: new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.35, metalness: 0.05, side: THREE.DoubleSide }),
+      corpoCostas: new THREE.MeshStandardMaterial({ color: 0xf1f5f9, roughness: 0.35, metalness: 0.05, side: THREE.DoubleSide }),
+      corpoFundo:  new THREE.MeshStandardMaterial({ color: 0xe2e8f0, roughness: 0.4, metalness: 0.05, side: THREE.DoubleSide }),
+      tampaPapel:  new THREE.MeshStandardMaterial({ color: 0x38bdf8, roughness: 0.35, metalness: 0.08, side: THREE.DoubleSide }),
+      tampaCola:   new THREE.MeshStandardMaterial({ color: 0xf59e0b, roughness: 0.45, metalness: 0.1, side: THREE.DoubleSide }),
       vinco: new THREE.LineBasicMaterial({ color: 0x22c55e, linewidth: 2 }),
       corte: new THREE.LineBasicMaterial({ color: 0xef4444, linewidth: 2 }),
       guia: new THREE.LineDashedMaterial({ color: 0x38bdf8, dashSize: 8, gapSize: 4 })
     };
   } else {
-    // Faca técnica
     return {
       corpoFrente: new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.85, side: THREE.DoubleSide }),
       corpoCostas: new THREE.MeshBasicMaterial({ color: 0xf8fafc, transparent: true, opacity: 0.85, side: THREE.DoubleSide }),
       corpoFundo:  new THREE.MeshBasicMaterial({ color: 0xf1f5f9, transparent: true, opacity: 0.85, side: THREE.DoubleSide }),
-      lateralCorpo: new THREE.MeshBasicMaterial({ color: 0xbae6fd, transparent: true, opacity: 0.9, side: THREE.DoubleSide }),
-      abaCola:     new THREE.MeshBasicMaterial({ color: 0xfef08a, transparent: true, opacity: 0.9, side: THREE.DoubleSide }),
+      tampaPapel:  new THREE.MeshBasicMaterial({ color: 0xbae6fd, transparent: true, opacity: 0.9, side: THREE.DoubleSide }),
+      tampaCola:   new THREE.MeshBasicMaterial({ color: 0xfef08a, transparent: true, opacity: 0.9, side: THREE.DoubleSide }),
       vinco: new THREE.LineBasicMaterial({ color: 0x22c55e, linewidth: 2 }),
       corte: new THREE.LineBasicMaterial({ color: 0xef4444, linewidth: 2 }),
       guia: new THREE.LineDashedMaterial({ color: 0x38bdf8, dashSize: 8, gapSize: 4 })
@@ -305,7 +350,6 @@ function criarMateriais() {
   }
 }
 
-// Helpers de geometria
 function criarQuad(v0, v1, v2, v3, mat) {
   const geo = new THREE.BufferGeometry();
   const verts = new Float32Array([
@@ -315,46 +359,14 @@ function criarQuad(v0, v1, v2, v3, mat) {
   geo.setAttribute('position', new THREE.BufferAttribute(verts, 3));
   geo.computeVertexNormals();
   const m = new THREE.Mesh(geo, mat);
-  m.castShadow = true;
-  m.receiveShadow = true;
-  return m;
-}
-
-function criarTri(v0, v1, v2, mat) {
-  const geo = new THREE.BufferGeometry();
-  const verts = new Float32Array([
-    v0.x, v0.y, v0.z,   v1.x, v1.y, v1.z,   v2.x, v2.y, v2.z
-  ]);
-  geo.setAttribute('position', new THREE.BufferAttribute(verts, 3));
-  geo.computeVertexNormals();
-  const m = new THREE.Mesh(geo, mat);
-  m.castShadow = true;
-  m.receiveShadow = true;
+  m.castShadow = true; m.receiveShadow = true;
   return m;
 }
 
 function criarLinha(p1, p2, mat) {
-  const geo = new THREE.BufferGeometry().setFromPoints([p1, p2]);
-  return new THREE.Line(geo, mat);
+  return new THREE.Line(new THREE.BufferGeometry().setFromPoints([p1, p2]), mat);
 }
 
-// Cria textura com o texto "COLA" para aplicar na aba
-function criarTexturaCola() {
-  const canvas = document.createElement('canvas');
-  canvas.width = 256; canvas.height = 128;
-  const ctx = canvas.getContext('2d');
-  ctx.fillStyle = '#f59e0b';
-  ctx.fillRect(0,0,256,128);
-  ctx.fillStyle = '#78350f';
-  ctx.font = 'bold 36px Arial';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText('COLA', 128, 64);
-  const tex = new THREE.CanvasTexture(canvas);
-  return tex;
-}
-
-// Painel com alça oblonga
 function criarPainelAlca(w, h, mat, matCorte) {
   const shape = new THREE.Shape();
   const rCanto = Math.min(20, h / 3);
@@ -390,120 +402,95 @@ function criarPainelAlca(w, h, mat, matCorte) {
 }
 
 // =============================================================================
-// GEOMETRIA REAL DA PEÇA 2 (FACA ORIGINAL DO PDF)
+// CONSTRUÇÃO HIERÁRQUICA DA TAMPA CAD
 // =============================================================================
-// A Peça 2 tem as medidas calculadas da faca original:
-// - Base da peça (onde cola no fundo do corpo): largura B (ex: 150mm)
-// - Topo da peça (cintura): largura 60mm (fundo_cintura)
-// - Altura da peça: 180mm (fundo_dobra_y)
-// - Nas laterais inclinadas: as DUAS ABAS DE COLA com corte chanfrado e texto "COLA"
-// =============================================================================
+function construirTampaHierarquica(mats) {
+  const pivots = [];
+  const rootGroup = new THREE.Group();
 
-const rootGroup = new THREE.Group();
-scene.add(rootGroup);
+  function buildPanelMesh(panelId, polygon) {
+    const shape = new THREE.Shape();
+    shape.moveTo(polygon[0].x, polygon[0].y);
+    for (let i = 1; i < polygon.length; i++) shape.lineTo(polygon[i].x, polygon[i].y);
+    shape.closePath();
 
-const groupCorpo = new THREE.Group();
-const groupLateralEsq = new THREE.Group();
-const groupLateralDir = new THREE.Group();
-rootGroup.add(groupCorpo);
-rootGroup.add(groupLateralEsq);
-rootGroup.add(groupLateralDir);
+    const geo = new THREE.ExtrudeGeometry(shape, { depth: TAMPA_CAD.thickness, bevelEnabled: false });
+    const isCola = panelId === 'panel-4a9841a6' || panelId === 'panel-111b4378';
+    const mesh = new THREE.Mesh(geo, isCola ? mats.tampaCola : mats.tampaPapel);
+    mesh.castShadow = true; mesh.receiveShadow = true;
 
-function construirPecaFacaOriginal(ladoSign, mats, B, H, A, sanfona) {
-  const grp = new THREE.Group();
+    // Linha de corte vermelha em volta do painel
+    const pts = polygon.map(p => new THREE.Vector3(p.x, p.y, TAMPA_CAD.thickness + 0.1));
+    pts.push(pts[0]);
+    mesh.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), mats.corte));
 
-  const hB = B / 2;
-  const hApex = Math.sqrt(Math.max(10, A * A - hB * hB));
+    return mesh;
+  }
 
-  // Escalas proporcionais da faca original
-  const escB = B / 150.0;
-  const escA = A / 300.0;
-  const escH = (hApex) / 290.47;
+  function visit(id, threeParent) {
+    const node = TAMPA_CAD.tree[id];
+    let parentForChildren;
 
-  // Medidas reais do PDF original
-  const largBase = B;                           // 150mm (fundo_dobra_larg)
-  const largTop  = 60.0 * escB;                 // 60mm (fundo_cintura)
-  const altPeca  = 180.0 * escH;                // 180mm (fundo_dobra_y)
-  const largAbaCola = 37.37 * escA;             // 37.37mm (cola_x)
-  const altOmbroCola = 165.0 * escH;            // 165mm (ombro_y)
-  const altCorteCola = 155.66 * escH;           // 155.66mm (cola_y)
+    if (node.parent && node.hinge) {
+      const piv = new THREE.Group();
+      piv.position.set(node.hinge.a.x, node.hinge.a.y, 0);
+      threeParent.add(piv);
 
-  // Coordenadas Z da sacola na base e no topo da peça lateral
-  const zBase = hB; // 75mm (no chão)
-  const zTop  = largTop / 2; // 30mm (no topo da peça lateral)
+      const ax = node.hinge.b.x - node.hinge.a.x;
+      const ay = node.hinge.b.y - node.hinge.a.y;
+      const axis = new THREE.Vector3(ax, ay, 0).normalize();
+      pivots.push({ panelId: id, pivot: piv, axis, sign: node.sign, target: node.target });
 
-  // Sanfonado do vinco central em V (quando fechada dobra para dentro)
-  const recuoCentro = (sanfona * 20.0);
-  const xCentro = -ladoSign * recuoCentro;
+      // Linha de vinco verde
+      const pA = new THREE.Vector3(0, 0, TAMPA_CAD.thickness + 0.2);
+      const pB = new THREE.Vector3(ax, ay, TAMPA_CAD.thickness + 0.2);
+      piv.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints([pA, pB]), mats.vinco));
 
-  // VÉRTICES DA FACE LATERAL DA PEÇA:
-  // Base (y = 0)
-  const vBaseFront = new THREE.Vector3(0, 0,  zBase);
-  const vBaseBack  = new THREE.Vector3(0, 0, -zBase);
-  const vBaseMid   = new THREE.Vector3(xCentro, 0, 0);
+      const mesh = buildPanelMesh(id, node.polygon);
+      mesh.position.set(-node.hinge.a.x, -node.hinge.a.y, 0);
+      piv.add(mesh);
+      parentForChildren = mesh;
+    } else {
+      const mesh = buildPanelMesh(id, node.polygon);
+      threeParent.add(mesh);
+      parentForChildren = mesh;
+    }
 
-  // Topo (y = altPeca)
-  const vTopFront  = new THREE.Vector3(0, altPeca,  zTop);
-  const vTopBack   = new THREE.Vector3(0, altPeca, -zTop);
-  const vTopMid    = new THREE.Vector3(xCentro, altPeca, 0);
+    for (const c of node.children) visit(c, parentForChildren);
+  }
 
-  // 1. ASAS DO CORPO DA LATERAL (com o vinco central em V)
-  // Asa Frontal
-  grp.add(criarQuad(vBaseFront, vTopFront, vTopMid, vBaseMid, mats.lateralCorpo));
-  // Asa Traseira
-  grp.add(criarQuad(vBaseMid, vTopMid, vTopBack, vBaseBack, mats.lateralCorpo));
+  visit(TAMPA_CAD.rootId, rootGroup);
 
-  // Vincos de dobra (verde)
-  grp.add(criarLinha(vBaseMid, vTopMid, mats.vinco)); // vinco central
-  grp.add(criarLinha(vBaseFront, vTopFront, mats.vinco)); // vinco da aba de cola frontal
-  grp.add(criarLinha(vBaseBack, vTopBack, mats.vinco));   // vinco da aba de cola traseira
-
-  // Cortes da peça (vermelho)
-  grp.add(criarLinha(vTopFront, vTopMid, mats.corte)); // topo frontal
-  grp.add(criarLinha(vTopMid, vTopBack, mats.corte));  // topo traseiro
-  grp.add(criarLinha(vBaseFront, vBaseMid, mats.corte)); // base frontal
-  grp.add(criarLinha(vBaseMid, vBaseBack, mats.corte));  // base traseira
-
-  // 2. ABAS DE COLA LATERAIS REAIS (CONFORME O PDF DA FACA)
-  // Aba Frontal: dobra 90° para dentro da parede frontal
-  const xCola = -ladoSign * largAbaCola;
-  const vColaFrontBase = new THREE.Vector3(xCola, 0, zBase);
-  const vColaFrontOmbro = new THREE.Vector3(xCola, altOmbroCola, zTop + (zBase - zTop) * (1 - altOmbroCola / altPeca));
-  const vColaFrontCorte = new THREE.Vector3(xCola, altCorteCola, zBase * 0.95);
-
-  // Malha da aba de cola frontal com chanfro do PDF
-  grp.add(criarQuad(vBaseFront, vTopFront, vColaFrontOmbro, vColaFrontBase, mats.abaCola));
-  grp.add(criarLinha(vColaFrontBase, vColaFrontCorte, mats.corte));
-  grp.add(criarLinha(vColaFrontCorte, vColaFrontOmbro, mats.corte));
-  grp.add(criarLinha(vColaFrontOmbro, vTopFront, mats.corte));
-
-  // Aba Traseira: dobra 90° para dentro da parede traseira
-  const vColaBackBase = new THREE.Vector3(xCola, 0, -zBase);
-  const vColaBackOmbro = new THREE.Vector3(xCola, altOmbroCola, -(zTop + (zBase - zTop) * (1 - altOmbroCola / altPeca)));
-  const vColaBackCorte = new THREE.Vector3(xCola, altCorteCola, -zBase * 0.95);
-
-  // Malha da aba de cola traseira com chanfro do PDF
-  grp.add(criarQuad(vColaBackBase, vColaBackOmbro, vTopBack, vBaseBack, mats.abaCola));
-  grp.add(criarLinha(vColaBackBase, vColaBackCorte, mats.corte));
-  grp.add(criarLinha(vColaBackCorte, vColaBackOmbro, mats.corte));
-  grp.add(criarLinha(vColaBackOmbro, vTopBack, mats.corte));
-
-  // 3. ABA SUPERIOR DE 15MM (fundo_aba_alt virada para dentro)
-  const altAbaSup = 15.0 * escH;
-  const vAbaSupFront = new THREE.Vector3(xCentro * 0.3, altPeca - altAbaSup, zTop * 0.9);
-  const vAbaSupBack  = new THREE.Vector3(xCentro * 0.3, altPeca - altAbaSup, -zTop * 0.9);
-  const vAbaSupMid   = new THREE.Vector3(xCentro, altPeca - altAbaSup, 0);
-
-  grp.add(criarQuad(vTopFront, vTopMid, vAbaSupMid, vAbaSupFront, mats.lateralCorpo));
-  grp.add(criarQuad(vTopMid, vTopBack, vAbaSupBack, vAbaSupMid, mats.lateralCorpo));
-  grp.add(criarLinha(vTopFront, vTopMid, mats.vinco));
-  grp.add(criarLinha(vTopMid, vTopBack, mats.vinco));
-
-  return grp;
+  return { rootGroup, pivots };
 }
 
+// Aplica ângulo de dobra da tampa
+function setTampaFold(pivots, t) {
+  for (const p of pivots) {
+    const target = -p.target * p.sign;
+    const angle = target * t;
+    p.pivot.quaternion.setFromAxisAngle(p.axis, angle);
+  }
+}
+
+// =============================================================================
+// MONTAGEM GERAL NO CENÁRIO
+// =============================================================================
+const rootScene = new THREE.Group();
+scene.add(rootScene);
+
+const groupCorpo = new THREE.Group();
+const groupTampaEsq = new THREE.Group();
+const groupTampaDir = new THREE.Group();
+rootScene.add(groupCorpo);
+rootScene.add(groupTampaEsq);
+rootScene.add(groupTampaDir);
+
+let tampaEsqObj = null;
+let tampaDirObj = null;
+
 function reconstruirModelo() {
-  [groupCorpo, groupLateralEsq, groupLateralDir].forEach(g => {
+  [groupCorpo, groupTampaEsq, groupTampaDir].forEach(g => {
     while (g.children.length > 0) {
       const obj = g.children[0];
       g.remove(obj);
@@ -522,9 +509,7 @@ function reconstruirModelo() {
   const hB = B / 2;
   const hApex = Math.sqrt(Math.max(10, A * A - hB * hB));
 
-  // =========================================================================
-  // PEÇA 1: CORPO PRINCIPAL
-  // =========================================================================
+  // 1. CORPO DA SACOLA (PEÇA 1)
   const bFrontEsq = new THREE.Vector3(-hH, 0,  hB);
   const bFrontDir = new THREE.Vector3( hH, 0,  hB);
   const bBackEsq  = new THREE.Vector3(-hH, 0, -hB);
@@ -533,27 +518,19 @@ function reconstruirModelo() {
   const apexEsq   = new THREE.Vector3(-hH, hApex, 0);
   const apexDir   = new THREE.Vector3( hH, hApex, 0);
 
-  // Fundo
   groupCorpo.add(criarQuad(bBackEsq, bBackDir, bFrontDir, bFrontEsq, mats.corpoFundo));
-
-  // Frente
   groupCorpo.add(criarQuad(bFrontEsq, bFrontDir, apexDir, apexEsq, mats.corpoFrente));
-
-  // Costas
   groupCorpo.add(criarQuad(bBackDir, bBackEsq, apexEsq, apexDir, mats.corpoCostas));
 
-  // Vincos do corpo
   groupCorpo.add(criarLinha(bFrontEsq, bFrontDir, mats.vinco));
   groupCorpo.add(criarLinha(bBackEsq,  bBackDir,  mats.vinco));
   groupCorpo.add(criarLinha(apexEsq,   apexDir,   mats.vinco));
 
-  // Bordas de corte nas laterais do corpo
   groupCorpo.add(criarLinha(bFrontEsq, apexEsq, mats.corte));
   groupCorpo.add(criarLinha(bBackEsq,  apexEsq, mats.corte));
   groupCorpo.add(criarLinha(bFrontDir, apexDir, mats.corte));
   groupCorpo.add(criarLinha(bBackDir,  apexDir, mats.corte));
 
-  // Alças superiores
   const alcaFront = criarPainelAlca(H, aba, mats.corpoFrente, mats.corte);
   alcaFront.position.set(0, hApex, 0.3);
   groupCorpo.add(alcaFront);
@@ -563,30 +540,46 @@ function reconstruirModelo() {
   alcaBack.rotation.y = Math.PI;
   groupCorpo.add(alcaBack);
 
-  // =========================================================================
-  // PEÇA 2: AS DUAS LATERAIS (PEÇAS DA FACA ORIGINAL)
-  // =========================================================================
-  const distExplode = params.explode * 160; // afasta até 160mm
+  // 2. AS DUAS TAMPAS (PEÇAS LATERAIS DO CAD)
+  const distExplode = params.explode * 160;
 
-  // Peça Lateral Esquerda
-  const meshEsq = construirPecaFacaOriginal(-1, mats, B, H, A, params.sanfona);
-  groupLateralEsq.position.set(-hH - distExplode, 0, 0);
-  groupLateralEsq.add(meshEsq);
+  // Escala para ajustar ao tamanho A, B atual (padrão é B=150, alt=180)
+  const scaleX = (B / 150.0);
+  const scaleY = (Math.min(hApex * 0.75, 180) / 180.0);
 
+  // Tampa Esquerda
+  tampaEsqObj = construirTampaHierarquica(mats);
+  setTampaFold(tampaEsqObj.pivots, params.foldProgress);
+
+  const carrierEsq = new THREE.Group();
+  carrierEsq.add(tampaEsqObj.rootGroup);
+  // Alinha o centro da tampa no eixo lateral
+  tampaEsqObj.rootGroup.position.set(-160, 0, 0); // centraliza largura 320 em torno da raiz
+  carrierEsq.rotation.y = -Math.PI / 2;
+  carrierEsq.rotation.z = Math.PI / 2;
+  carrierEsq.position.set(-hH - distExplode, 0, 0);
+  groupTampaEsq.add(carrierEsq);
+
+  // Tampa Direita (espelhada)
+  tampaDirObj = construirTampaHierarquica(mats);
+  setTampaFold(tampaDirObj.pivots, params.foldProgress);
+
+  const carrierDir = new THREE.Group();
+  carrierDir.add(tampaDirObj.rootGroup);
+  tampaDirObj.rootGroup.position.set(-160, 0, 0);
+  carrierDir.rotation.y = Math.PI / 2;
+  carrierDir.rotation.z = Math.PI / 2;
+  carrierDir.position.set(hH + distExplode, 0, 0);
+  groupTampaDir.add(carrierDir);
+
+  // Guias de montagem
   if (params.explode > 0.04) {
-    const pOrig = new THREE.Vector3(-hH, 90, 0);
-    const pDest = new THREE.Vector3(-hH - distExplode, 90, 0);
-    const guia = criarLinha(pOrig, pDest, mats.guia);
-    guia.computeLineDistances();
-    groupCorpo.add(guia);
-  }
+    const pOrigE = new THREE.Vector3(-hH, 90, 0);
+    const pDestE = new THREE.Vector3(-hH - distExplode, 90, 0);
+    const guiaE = criarLinha(pOrigE, pDestE, mats.guia);
+    guiaE.computeLineDistances();
+    groupCorpo.add(guiaE);
 
-  // Peça Lateral Direita
-  const meshDir = construirPecaFacaOriginal(1, mats, B, H, A, params.sanfona);
-  groupLateralDir.position.set(hH + distExplode, 0, 0);
-  groupLateralDir.add(meshDir);
-
-  if (params.explode > 0.04) {
     const pOrigD = new THREE.Vector3(hH, 90, 0);
     const pDestD = new THREE.Vector3(hH + distExplode, 90, 0);
     const guiaD = criarLinha(pOrigD, pDestD, mats.guia);
@@ -597,8 +590,6 @@ function reconstruirModelo() {
   // Métricas
   document.getElementById('mAltura').textContent = (hApex + aba).toFixed(0) + ' mm';
   document.getElementById('mBase').textContent = B.toFixed(0) + ' × ' + H.toFixed(0) + ' mm';
-  document.getElementById('mLateralB').textContent = B.toFixed(0) + ' mm';
-  document.getElementById('mLateralTop').textContent = (60 * (B/150)).toFixed(0) + ' mm';
 }
 
 // =============================================================================
@@ -608,34 +599,40 @@ function syncInputs() {
   const slA = document.getElementById('slA');
   const slB = document.getElementById('slB');
   const slH = document.getElementById('slH');
-  const slSanfona = document.getElementById('slSanfona');
+  const slFold = document.getElementById('slFold');
   const slExplode = document.getElementById('slExplode');
 
   function atualizar() {
     params.A = parseFloat(slA.value);
     params.B = parseFloat(slB.value);
     params.H = parseFloat(slH.value);
-    params.sanfona = parseFloat(slSanfona.value) / 100;
+    params.foldProgress = parseFloat(slFold.value) / 100;
     params.explode = parseFloat(slExplode.value) / 100;
 
     document.getElementById('txtA').textContent = params.A;
     document.getElementById('txtB').textContent = params.B;
     document.getElementById('txtH').textContent = params.H;
-    document.getElementById('txtSanfona').textContent = slSanfona.value;
+    document.getElementById('txtFold').textContent = slFold.value + '% ' + (params.foldProgress === 1 ? 'Fechada' : (params.foldProgress === 0 ? 'Plana' : ''));
 
     const txtExp = document.getElementById('txtExplode');
     if (params.explode === 0) {
       txtExp.textContent = 'Montada (Colada)';
       txtExp.style.color = '#38bdf8';
     } else {
-      txtExp.textContent = 'Peça Solta (' + slExplode.value + '%)';
+      txtExp.textContent = 'Peças Soltas (' + slExplode.value + '%)';
       txtExp.style.color = '#f59e0b';
     }
 
-    reconstruirModelo();
+    if (tampaEsqObj && tampaDirObj) {
+      setTampaFold(tampaEsqObj.pivots, params.foldProgress);
+      setTampaFold(tampaDirObj.pivots, params.foldProgress);
+      reconstruirModelo();
+    } else {
+      reconstruirModelo();
+    }
   }
 
-  [slA, slB, slH, slSanfona, slExplode].forEach(el => {
+  [slA, slB, slH, slFold, slExplode].forEach(el => {
     el.addEventListener('input', atualizar);
   });
 

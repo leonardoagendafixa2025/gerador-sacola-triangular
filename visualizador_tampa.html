@@ -1,0 +1,334 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Visualizador 3D — Tampa / Peça Lateral (Faca Primacor)</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  html,body { margin:0; height:100%; background:#0e1018; color:#e6e8ef;
+    font:13px/1.4 system-ui,-apple-system,Segoe UI,Roboto,sans-serif; }
+  #app { display:flex; flex-direction:column; height:100dvh; }
+  header { display:flex; align-items:center; gap:8px; padding:8px 14px;
+    border-bottom:1px solid rgba(255,255,255,.08); background:rgba(255,255,255,.03); flex-wrap:wrap; }
+  header .title { font-weight:600; font-size:14px; }
+  header .badge { font:11px/1 ui-monospace,monospace; padding:3px 7px;
+    border-radius:999px; background:rgba(255,255,255,.06); color:#aab; }
+  .spacer { flex:1; }
+  .btn { display:inline-flex; align-items:center; gap:6px; padding:5px 9px;
+    border-radius:6px; background:transparent; color:#9aa3b2; border:0; cursor:pointer;
+    font:11px/1 system-ui; transition:.15s; }
+  .btn:hover { background:rgba(255,255,255,.08); color:#fff; }
+  .btn.active { background:rgba(99,102,241,.18); color:#fff; }
+  .stage { position:relative; flex:1; overflow:hidden; background:#0e1018; }
+  #canvasHolder { position:absolute; inset:0; cursor:grab; }
+  #canvasHolder:active { cursor:grabbing; }
+  .faces { position:absolute; left:12px; top:12px; display:flex; gap:4px; flex-wrap:wrap;
+    background:rgba(0,0,0,.4); border:1px solid rgba(255,255,255,.08); padding:4px;
+    border-radius:8px; backdrop-filter:blur(6px); z-index:5; }
+  .faces button { font-size:10px; padding:4px 8px; border-radius:5px; background:transparent;
+    color:#9aa3b2; border:0; cursor:pointer; }
+  .faces button:hover { background:rgba(255,255,255,.1); color:#fff; }
+  .footer { display:flex; align-items:center; gap:12px; padding:10px 16px;
+    border-top:1px solid rgba(255,255,255,.08); background:rgba(255,255,255,.03); }
+  .footer label { font-size:11px; color:#9aa3b2; min-width:46px; }
+  .footer input[type=range] { flex:1; accent-color:#818cf8; }
+  .footer .pct { font:11px/1 ui-monospace,monospace; min-width:48px; text-align:right; }
+</style>
+<!-- Bibliotecas locais offline -->
+<script src="libs/three.min.js"></script>
+<script src="libs/OrbitControls.classic.js"></script>
+</head>
+<body>
+<div id="app">
+  <header>
+    <span class="title" id="docTitle">Tampa / Lateral 3D</span>
+    <span class="badge" id="partsBadge">Peça Original</span>
+    <span class="spacer"></span>
+    <button class="btn" id="btnHome" title="Voltar ao estado inicial">⌂ Inicial</button>
+    <button class="btn" id="btnFlat">▭ Plano (0%)</button>
+    <button class="btn" id="btnClose">▣ Fechar (100%)</button>
+    <button class="btn" id="btnPlay">▶ Animar Dobra</button>
+    <button class="btn" id="btnResetRot">↺ Resetar Rotação</button>
+    <button class="btn" id="btnAuto">⟳ Girar 360°</button>
+  </header>
+  <div class="stage">
+    <div id="canvasHolder"></div>
+    <div class="faces">
+      <button data-face="front">Frente</button>
+      <button data-face="back">Trás</button>
+      <button data-face="left">Esquerda</button>
+      <button data-face="right">Direita</button>
+      <button data-face="top">Topo</button>
+      <button data-face="bottom">Base</button>
+    </div>
+  </div>
+  <div class="footer">
+    <label>Dobra</label>
+    <input id="foldRange" type="range" min="0" max="100" step="1" value="0" />
+    <span class="pct" id="foldPct">0%</span>
+  </div>
+</div>
+
+<script>
+// Dados exatos enviados pelo usuário com polígonos e eixos de dobradura
+const DATA = {
+  "title": "Tampa / Peça Lateral da Faca",
+  "parts": [{
+    "id": "part_tampa",
+    "width": 320,
+    "height": 195,
+    "rootId": "panel-ac1d5c30",
+    "thickness": 0.5,
+    "tree": {
+      "panel-ac1d5c30": {
+        "id": "panel-ac1d5c30",
+        "polygon": [{"x":85,"y":180},{"x":130,"y":0},{"x":190,"y":0},{"x":235,"y":180}],
+        "parent": null, "hinge": null, "sign": 1, "target": 0,
+        "children": ["panel-6f5dc360","panel-7c6543f8","panel-03b4a8a0"]
+      },
+      "panel-7c6543f8": {
+        "id": "panel-7c6543f8",
+        "polygon": [{"x":85,"y":180},{"x":73.288,"y":165},{"x":0,"y":71.134},{"x":0,"y":0},{"x":130,"y":0}],
+        "parent": "panel-ac1d5c30",
+        "hinge": {"a":{"x":85,"y":180},"b":{"x":130,"y":0}},
+        "sign": -1, "target": Math.PI/2,
+        "children": ["panel-4a9841a6"]
+      },
+      "panel-6f5dc360": {
+        "id": "panel-6f5dc360",
+        "polygon": [{"x":235,"y":180},{"x":190,"y":0},{"x":320,"y":0},{"x":320,"y":71.134},{"x":246.712,"y":165}],
+        "parent": "panel-ac1d5c30",
+        "hinge": {"a":{"x":190,"y":0},"b":{"x":235,"y":180}},
+        "sign": -1, "target": Math.PI/2,
+        "children": ["panel-111b4378"]
+      },
+      "panel-111b4378": {
+        "id": "panel-111b4378", // Aba de Cola Direita
+        "polygon": [{"x":282.632,"y":165},{"x":246.712,"y":165},{"x":320,"y":71.134},{"x":320,"y":155.658}],
+        "parent": "panel-6f5dc360",
+        "hinge": {"a":{"x":246.712,"y":165},"b":{"x":320,"y":71.134}},
+        "sign": 1, "target": Math.PI/2,
+        "children": []
+      },
+      "panel-4a9841a6": {
+        "id": "panel-4a9841a6", // Aba de Cola Esquerda
+        "polygon": [{"x":37.369,"y":165},{"x":0,"y":155.658},{"x":0,"y":71.134},{"x":73.288,"y":165}],
+        "parent": "panel-7c6543f8",
+        "hinge": {"a":{"x":0,"y":71.134},"b":{"x":73.288,"y":165}},
+        "sign": 1, "target": Math.PI/2,
+        "children": []
+      },
+      "panel-03b4a8a0": {
+        "id": "panel-03b4a8a0", // Aba Superior 15mm
+        "polygon": [{"x":85,"y":180},{"x":235,"y":180},{"x":223.288,"y":195},{"x":96.712,"y":195}],
+        "parent": "panel-ac1d5c30",
+        "hinge": {"a":{"x":85,"y":180},"b":{"x":235,"y":180}},
+        "sign": 1, "target": Math.PI/2,
+        "children": []
+      }
+    }
+  }]
+};
+
+const holder = document.getElementById("canvasHolder");
+const W0 = holder.clientWidth || window.innerWidth, H0 = holder.clientHeight || window.innerHeight;
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x0e1018);
+
+const camera = new THREE.PerspectiveCamera(38, W0 / H0, 1, 20000);
+camera.position.set(200, 250, 450);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setSize(W0, H0);
+holder.appendChild(renderer.domElement);
+
+scene.add(new THREE.DirectionalLight(0xffffff, 0.9).translateX(1).translateY(1.4).translateZ(1));
+scene.add(new THREE.DirectionalLight(0x93c5fd, 0.5).translateX(-1.2).translateY(0.6).translateZ(0.4));
+scene.add(new THREE.AmbientLight(0xffffff, 0.65));
+
+const pivot = new THREE.Group(); scene.add(pivot);
+const world = new THREE.Group(); pivot.add(world);
+
+const partData = DATA.parts[0];
+const group = new THREE.Group();
+world.add(group);
+
+const root = new THREE.Group();
+root.position.set(-partData.width/2, 0, partData.height/2);
+root.rotation.x = -Math.PI/2;
+group.add(root);
+
+const matPapel = new THREE.MeshStandardMaterial({ color: 0x38bdf8, roughness: 0.35, side: THREE.DoubleSide });
+const matCola  = new THREE.MeshStandardMaterial({ color: 0xf59e0b, roughness: 0.45, side: THREE.DoubleSide });
+const matVerso = new THREE.MeshStandardMaterial({ color: 0xe2e8f0, roughness: 0.5, side: THREE.DoubleSide });
+const matVinco = new THREE.LineBasicMaterial({ color: 0x22c55e, linewidth: 2 });
+const matCorte = new THREE.LineBasicMaterial({ color: 0xef4444, linewidth: 2 });
+
+const pivots = [];
+
+function buildPanelMesh(panelId, polygon) {
+  const shape = new THREE.Shape();
+  shape.moveTo(polygon[0].x, polygon[0].y);
+  for (let i = 1; i < polygon.length; i++) shape.lineTo(polygon[i].x, polygon[i].y);
+  shape.closePath();
+
+  const geo = new THREE.ExtrudeGeometry(shape, { depth: partData.thickness, bevelEnabled: false });
+  const isCola = panelId === 'panel-4a9841a6' || panelId === 'panel-111b4378';
+  const mFrente = isCola ? matCola : matPapel;
+
+  const mesh = new THREE.Mesh(geo, [mFrente, matVerso]);
+
+  // Contorno de corte (vermelho)
+  const pts = polygon.map(p => new THREE.Vector3(p.x, p.y, partData.thickness + 0.1));
+  pts.push(pts[0]);
+  const lCorte = new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), matCorte);
+  mesh.add(lCorte);
+
+  return mesh;
+}
+
+function visit(id, threeParent) {
+  const node = partData.tree[id];
+  let parentForChildren;
+
+  if (node.parent && node.hinge) {
+    const piv = new THREE.Group();
+    piv.position.set(node.hinge.a.x, node.hinge.a.y, 0);
+    threeParent.add(piv);
+
+    const ax = node.hinge.b.x - node.hinge.a.x;
+    const ay = node.hinge.b.y - node.hinge.a.y;
+    const axis = new THREE.Vector3(ax, ay, 0).normalize();
+    pivots.push({ panelId: id, pivot: piv, axis, sign: node.sign, target: node.target });
+
+    // Linha de vinco verde na dobradiça
+    const pA = new THREE.Vector3(0, 0, partData.thickness + 0.2);
+    const pB = new THREE.Vector3(ax, ay, partData.thickness + 0.2);
+    piv.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints([pA, pB]), matVinco));
+
+    const mesh = buildPanelMesh(id, node.polygon);
+    mesh.position.set(-node.hinge.a.x, -node.hinge.a.y, 0);
+    piv.add(mesh);
+    parentForChildren = mesh;
+  } else {
+    const mesh = buildPanelMesh(id, node.polygon);
+    threeParent.add(mesh);
+    parentForChildren = mesh;
+  }
+
+  for (const c of node.children) visit(c, parentForChildren);
+}
+
+visit(partData.rootId, root);
+
+function applyFold(t) {
+  for (const p of pivots) {
+    const target = -p.target * p.sign;
+    const angle = target * t;
+    p.pivot.quaternion.setFromAxisAngle(p.axis, angle);
+  }
+}
+
+function recenterPivotOnBase() {
+  const box = new THREE.Box3().setFromObject(world);
+  if (!isFinite(box.min.x)) return;
+  const cx = (box.min.x + box.max.x) / 2;
+  const cy = box.min.y;
+  const cz = (box.min.z + box.max.z) / 2;
+  world.position.set(-cx, -cy, -cz);
+}
+
+applyFold(0);
+recenterPivotOnBase();
+
+const controls = new THREE.OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.dampingFactor = 0.06;
+controls.minDistance = 50;
+controls.maxDistance = 3000;
+controls.target.set(0, 50, 0);
+
+// Animação e controles
+let autoRot = false;
+function animate() {
+  requestAnimationFrame(animate);
+  controls.update();
+  if (autoRot) pivot.rotation.y += 0.008;
+  renderer.render(scene, camera);
+}
+animate();
+
+window.addEventListener("resize", () => {
+  const W = holder.clientWidth, H = holder.clientHeight;
+  camera.aspect = W / H;
+  camera.updateProjectionMatrix();
+  renderer.setSize(W, H);
+});
+
+const foldRange = document.getElementById("foldRange");
+const foldPct = document.getElementById("foldPct");
+function setFold(v) {
+  const fold = Math.max(0, Math.min(1, v));
+  applyFold(fold);
+  recenterPivotOnBase();
+  foldRange.value = String(Math.round(fold * 100));
+  foldPct.textContent = Math.round(fold * 100) + "%";
+}
+foldRange.addEventListener("input", (e) => setFold(Number(e.target.value) / 100));
+
+let playRaf = 0, playing = false, playDir = 1, curFold = 0;
+function playTick() {
+  if (!playing) return;
+  curFold += playDir * 0.015;
+  if (curFold >= 1) { curFold = 1; playDir = -1; }
+  if (curFold <= 0) { curFold = 0; playDir = 1; }
+  setFold(curFold);
+  playRaf = requestAnimationFrame(playTick);
+}
+document.getElementById("btnPlay").onclick = () => {
+  playing = !playing;
+  document.getElementById("btnPlay").textContent = playing ? "⏸ Pausar" : "▶ Animar Dobra";
+  if (playing) playRaf = requestAnimationFrame(playTick);
+  else cancelAnimationFrame(playRaf);
+};
+
+document.getElementById("btnFlat").onclick = () => { if (playing) document.getElementById("btnPlay").click(); setFold(0); };
+document.getElementById("btnClose").onclick = () => { if (playing) document.getElementById("btnPlay").click(); setFold(1); };
+document.getElementById("btnHome").onclick = () => {
+  setFold(1);
+  pivot.rotation.set(0,0,0);
+  camera.position.set(200, 250, 450);
+  controls.target.set(0, 50, 0);
+};
+document.getElementById("btnResetRot").onclick = () => {
+  pivot.rotation.set(0,0,0);
+  camera.position.set(0, 150, 450);
+  controls.target.set(0, 50, 0);
+};
+document.getElementById("btnAuto").onclick = () => {
+  autoRot = !autoRot;
+  document.getElementById("btnAuto").classList.toggle("active", autoRot);
+};
+
+// Vistas
+document.querySelectorAll(".faces button").forEach(b => {
+  b.onclick = () => {
+    const f = b.dataset.face;
+    setFold(1);
+    pivot.rotation.set(0,0,0);
+    if (f === 'front') camera.position.set(0, 50, 400);
+    if (f === 'back') camera.position.set(0, 50, -400);
+    if (f === 'left') camera.position.set(-400, 50, 0);
+    if (f === 'right') camera.position.set(400, 50, 0);
+    if (f === 'top') camera.position.set(0, 450, 0);
+    if (f === 'bottom') camera.position.set(0, -450, 0);
+    controls.target.set(0, 50, 0);
+  };
+});
+</script>
+</body>
+</html>
