@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sacola Triangular 3D – Montagem das 2 Peças | Primacor</title>
+<title>Sacola Triangular 3D – Fechamento Real da Peça Interna | Primacor</title>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
   body {
@@ -20,19 +20,26 @@
     background: rgba(15, 23, 42, 0.94);
     border: 1px solid #334155;
     border-radius: 14px;
-    padding: 18px 20px;
-    width: 310px;
+    padding: 16px 18px;
+    width: 320px;
     backdrop-filter: blur(12px);
-    box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
     z-index: 10;
   }
   .marca { font-size: 10px; color: #38bdf8; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; }
-  h1 { font-size: 15px; font-weight: 700; margin: 4px 0 14px; color: #fff; }
+  h1 { font-size: 15px; font-weight: 700; margin: 3px 0 12px; color: #fff; }
 
-  .grupo-campo { margin-bottom: 11px; }
-  .label-row { display: flex; justify-content: space-between; font-size: 12px; color: #94a3b8; margin-bottom: 3px; }
+  .destaque-anim {
+    background: rgba(56, 189, 248, 0.1);
+    border: 1px solid rgba(56, 189, 248, 0.3);
+    border-radius: 8px;
+    padding: 9px 11px;
+    margin-bottom: 12px;
+  }
+
+  .grupo-campo { margin-bottom: 10px; }
+  .label-row { display: flex; justify-content: space-between; font-size: 11px; color: #94a3b8; margin-bottom: 3px; }
   .label-row b { color: #f8fafc; font-size: 12px; }
-  .label-row span { color: #64748b; font-size: 11px; }
 
   input[type=range] {
     width: 100%;
@@ -41,14 +48,6 @@
     background: #1e293b;
     border-radius: 2px;
     cursor: pointer;
-  }
-
-  .destaque-anim {
-    background: rgba(56, 189, 248, 0.08);
-    border: 1px solid rgba(56, 189, 248, 0.25);
-    border-radius: 8px;
-    padding: 8px 10px;
-    margin: 10px 0;
   }
 
   .botoes-modo {
@@ -90,10 +89,10 @@
   }
   .btn-vista:hover { background: #1e293b; color: #fff; border-color: #38bdf8; }
 
-  /* Legenda das 2 peças */
+  /* Legenda fiel */
   #legenda {
     position: fixed; bottom: 16px; left: 16px;
-    background: rgba(15, 23, 42, 0.88);
+    background: rgba(15, 23, 42, 0.9);
     border: 1px solid #334155;
     border-radius: 10px;
     padding: 10px 14px;
@@ -101,26 +100,15 @@
     color: #94a3b8;
     line-height: 2;
     z-index: 10;
+    max-width: 380px;
   }
   .dot { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: middle; }
 
-  #badge-aviso {
-    margin-top: 4px;
-    padding: 6px 8px;
-    background: #0369a1;
-    color: #e0f2fe;
-    font-size: 11px;
-    border-radius: 6px;
-    line-height: 1.4;
-  }
-
-  /* Dicas */
   #dica {
     position: fixed; bottom: 16px; right: 16px;
     font-size: 11px; color: #475569; text-align: right; line-height: 1.8;
   }
 </style>
-<!-- Bibliotecas locais: 100% offline via script clássico -->
 <script src="libs/three.min.js"></script>
 <script src="libs/OrbitControls.classic.js"></script>
 </head>
@@ -130,18 +118,18 @@
 
 <div id="painel">
   <div class="marca">Primacor Gráfica</div>
-  <h1>Montagem das 2 Peças (3D)</h1>
+  <h1>Fechamento Real da Lateral</h1>
 
-  <!-- Controle de Encaixe / Explosão -->
+  <!-- Slider de Encaixe / Explosão -->
   <div class="destaque-anim">
     <div class="label-row">
-      <span style="color:#38bdf8; font-weight:600;">Encaixe das 2 Peças</span>
-      <b><span id="txtExplode">Montada</span></b>
+      <span style="color:#38bdf8; font-weight:700;">Encaixe da Peça Lateral</span>
+      <b><span id="txtExplode">Montada (Colada)</span></b>
     </div>
     <input type="range" id="slExplode" min="0" max="100" value="0" step="1">
     <div style="display:flex; justify-content:space-between; font-size:10px; color:#64748b; margin-top:2px;">
-      <span>0% Montada / Colada</span>
-      <span>100% Peças Soltas</span>
+      <span>0% Colada no Corpo</span>
+      <span>100% Peça Solta no Ar</span>
     </div>
   </div>
 
@@ -155,7 +143,7 @@
 
   <div class="grupo-campo">
     <div class="label-row">
-      <span>Largura Fundo (B)</span>
+      <span>Largura do Fundo (B)</span>
       <b><span id="txtB">150</span> mm</b>
     </div>
     <input type="range" id="slB" min="60" max="350" value="150" step="5">
@@ -174,45 +162,42 @@
       <span>Altura da Peça Lateral (Fundo)</span>
       <b><span id="txtAltLateral">180</span> mm</b>
     </div>
-    <input type="range" id="slAltLateral" min="80" max="350" value="180" step="5">
+    <input type="range" id="slAltLateral" min="80" max="320" value="180" step="5">
   </div>
 
   <div class="grupo-campo">
     <div class="label-row">
-      <span>Abertura da Sacola</span>
+      <span>Abertura / Fole em V</span>
       <b><span id="txtAbertura">100</span>%</b>
     </div>
     <input type="range" id="slAbertura" min="0" max="100" value="100" step="1">
   </div>
 
   <div class="botoes-modo">
-    <button class="btn-modo ativo" id="modoReal" onclick="setModo('real')">Boutique (Cores)</button>
-    <button class="btn-modo" id="modoFaca" onclick="setModo('faca')">Faca Técnica</button>
-  </div>
-
-  <div id="badge-aviso">
-    💡 Arraste o slider <b>Encaixe</b> para separar a <b>Peça Lateral</b> e ver as <b>Abas de Cola</b> que colam no Corpo!
+    <button class="btn-modo ativo" id="modoReal" onclick="setModo('real')">Papel Real</button>
+    <button class="btn-modo" id="modoFaca" onclick="setModo('faca')">Faca Técnica (Linhas)</button>
   </div>
 
   <div id="metricas">
-    <div><span>Altura cume sacola:</span> <b id="mAltura">—</b></div>
+    <div><span>Altura total da sacola:</span> <b id="mAltura">—</b></div>
     <div><span>Base no chão (B × H):</span> <b id="mBase">—</b></div>
-    <div><span>Peça Lateral (topo B):</span> <b id="mLateral">—</b></div>
+    <div><span>Aba superior da lateral:</span> <b>15 mm (virada p/ dentro)</b></div>
+    <div><span>Abas de cola laterais:</span> <b>20 mm (coladas na frente e trás)</b></div>
   </div>
 </div>
 
 <div id="vistas">
-  <button class="btn-vista" onclick="setCameraView('lateral')">👁 Lateral (Ver Encaixe)</button>
+  <button class="btn-vista" onclick="setCameraView('lateral')">👁 Lateral (Fole em V)</button>
+  <button class="btn-vista" onclick="setCameraView('persp')">👁 Lateral / Interna</button>
   <button class="btn-vista" onclick="setCameraView('frente')">👁 Frente</button>
-  <button class="btn-vista" onclick="setCameraView('topo')">👁 Topo (Abertura)</button>
-  <button class="btn-vista" onclick="setCameraView('iso')">👁 Isométrica</button>
+  <button class="btn-vista" onclick="setCameraView('topo')">👁 Topo</button>
 </div>
 
 <div id="legenda">
   <div><span class="dot" style="background:#f8fafc; border:1px solid #94a3b8"></span> <b>Peça 1 (Corpo):</b> Frente + Fundo + Trás + Alças</div>
-  <div><span class="dot" style="background:#38bdf8"></span> <b>Peça 2 (Lateral/Fundo):</b> Peça solta colada na lateral</div>
-  <div><span class="dot" style="background:#f59e0b"></span> <b>Abas de COLA:</b> Dobram e colam na face interna</div>
-  <div><span class="dot" style="background:#22c55e"></span> <b>Vincos de dobra</b></div>
+  <div><span class="dot" style="background:#38bdf8"></span> <b>Peça 2 (Lateral/Fundo):</b> Berço contínuo dobrado em V</div>
+  <div><span class="dot" style="background:#f59e0b"></span> <b>Abas de COLA:</b> Dobram 90° e colam nas paredes internas</div>
+  <div><span class="dot" style="background:#22c55e"></span> <b>Vincos de dobra sanfonada</b></div>
 </div>
 
 <div id="dica">
@@ -221,7 +206,7 @@
 
 <script>
 // =============================================================================
-// SETUP 3D - THREE.JS
+// SETUP THREE.JS
 // =============================================================================
 const container = document.getElementById('canvas-container');
 const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
@@ -237,29 +222,29 @@ const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x0f172a);
 scene.fog = new THREE.FogExp2(0x0f172a, 0.0003);
 
-const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 1, 10000);
+const camera = new THREE.PerspectiveCamera(38, window.innerWidth / window.innerHeight, 1, 10000);
 const controls = new THREE.OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.06;
-controls.minDistance = 100;
+controls.minDistance = 80;
 controls.maxDistance = 4000;
 
 // Iluminação
 const ambLight = new THREE.AmbientLight(0xffffff, 0.7);
 scene.add(ambLight);
 
-const keyLight = new THREE.DirectionalLight(0xffffff, 1.2);
+const keyLight = new THREE.DirectionalLight(0xffffff, 1.25);
 keyLight.position.set(500, 1000, 600);
 keyLight.castShadow = true;
 keyLight.shadow.mapSize.width = 2048;
 keyLight.shadow.mapSize.height = 2048;
 scene.add(keyLight);
 
-const fillLight = new THREE.DirectionalLight(0x93c5fd, 0.5);
+const fillLight = new THREE.DirectionalLight(0x93c5fd, 0.55);
 fillLight.position.set(-600, 400, -300);
 scene.add(fillLight);
 
-const backLight = new THREE.DirectionalLight(0xffffff, 0.4);
+const backLight = new THREE.DirectionalLight(0xffffff, 0.45);
 backLight.position.set(0, 300, -800);
 scene.add(backLight);
 
@@ -284,9 +269,9 @@ let params = {
   B: 150,
   H: 400,
   aba: 75,
-  altLateral: 180, // altura da Peça 2 (fundo_dobra_y)
-  abertura: 1.0,
-  explode: 0.0    // 0 = montada, 1 = explodida
+  altLateral: 180, // altura onde termina a lateral
+  abertura: 1.0,   // 0 a 1 (controle do fole em V)
+  explode: 0.0     // 0 = montada, 1 = explodida
 };
 
 // =============================================================================
@@ -304,8 +289,12 @@ function criarMateriais() {
       corpoFundo: new THREE.MeshStandardMaterial({
         color: 0xe2e8f0, roughness: 0.4, metalness: 0.05, side: THREE.DoubleSide
       }),
-      lateral: new THREE.MeshStandardMaterial({
-        color: 0x38bdf8, roughness: 0.4, metalness: 0.08, side: THREE.DoubleSide
+      // Peça lateral (cor azul suave fiel)
+      lateralAsaFront: new THREE.MeshStandardMaterial({
+        color: 0x38bdf8, roughness: 0.35, metalness: 0.08, side: THREE.DoubleSide
+      }),
+      lateralAsaBack: new THREE.MeshStandardMaterial({
+        color: 0x0ea5e9, roughness: 0.35, metalness: 0.08, side: THREE.DoubleSide
       }),
       lateralAbaSup: new THREE.MeshStandardMaterial({
         color: 0x0284c7, roughness: 0.4, metalness: 0.08, side: THREE.DoubleSide
@@ -315,7 +304,7 @@ function criarMateriais() {
       }),
       vinco: new THREE.LineBasicMaterial({ color: 0x22c55e, linewidth: 2 }),
       corte: new THREE.LineBasicMaterial({ color: 0xef4444, linewidth: 2 }),
-      guiaEncaixe: new THREE.LineDashedMaterial({ color: 0x38bdf8, dashSize: 8, gapSize: 4 })
+      guia: new THREE.LineDashedMaterial({ color: 0x38bdf8, dashSize: 8, gapSize: 4 })
     };
   } else {
     // Modo faca técnica
@@ -323,25 +312,26 @@ function criarMateriais() {
       corpoFrente: new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.85, side: THREE.DoubleSide }),
       corpoCostas: new THREE.MeshBasicMaterial({ color: 0xf8fafc, transparent: true, opacity: 0.85, side: THREE.DoubleSide }),
       corpoFundo:  new THREE.MeshBasicMaterial({ color: 0xf1f5f9, transparent: true, opacity: 0.85, side: THREE.DoubleSide }),
-      lateral:     new THREE.MeshBasicMaterial({ color: 0xe0f2fe, transparent: true, opacity: 0.9, side: THREE.DoubleSide }),
-      lateralAbaSup: new THREE.MeshBasicMaterial({ color: 0xbae6fd, transparent: true, opacity: 0.9, side: THREE.DoubleSide }),
+      lateralAsaFront: new THREE.MeshBasicMaterial({ color: 0xe0f2fe, transparent: true, opacity: 0.9, side: THREE.DoubleSide }),
+      lateralAsaBack:  new THREE.MeshBasicMaterial({ color: 0xbae6fd, transparent: true, opacity: 0.9, side: THREE.DoubleSide }),
+      lateralAbaSup:   new THREE.MeshBasicMaterial({ color: 0x7dd3fc, transparent: true, opacity: 0.9, side: THREE.DoubleSide }),
       abaCola:     new THREE.MeshBasicMaterial({ color: 0xfef08a, transparent: true, opacity: 0.9, side: THREE.DoubleSide }),
       vinco: new THREE.LineBasicMaterial({ color: 0x22c55e, linewidth: 2 }),
       corte: new THREE.LineBasicMaterial({ color: 0xef4444, linewidth: 2 }),
-      guiaEncaixe: new THREE.LineDashedMaterial({ color: 0x38bdf8, dashSize: 8, gapSize: 4 })
+      guia: new THREE.LineDashedMaterial({ color: 0x38bdf8, dashSize: 8, gapSize: 4 })
     };
   }
 }
 
 // =============================================================================
-// GEOMETRIA DAS 2 PEÇAS ENCAIXADAS
+// CONSTRUÇÃO GEOMÉTRICA DAS PEÇAS
 // =============================================================================
 const rootGroup = new THREE.Group();
 scene.add(rootGroup);
 
-const groupCorpo = new THREE.Group();      // Peça 1
-const groupLateralEsq = new THREE.Group(); // Peça 2 - Lado Esquerdo
-const groupLateralDir = new THREE.Group(); // Peça 2 - Lado Direito
+const groupCorpo = new THREE.Group();
+const groupLateralEsq = new THREE.Group();
+const groupLateralDir = new THREE.Group();
 rootGroup.add(groupCorpo);
 rootGroup.add(groupLateralEsq);
 rootGroup.add(groupLateralDir);
@@ -360,25 +350,12 @@ function criarQuad(v0, v1, v2, v3, mat) {
   return m;
 }
 
-function criarTri(v0, v1, v2, mat) {
-  const geo = new THREE.BufferGeometry();
-  const verts = new Float32Array([
-    v0.x, v0.y, v0.z,   v1.x, v1.y, v1.z,   v2.x, v2.y, v2.z
-  ]);
-  geo.setAttribute('position', new THREE.BufferAttribute(verts, 3));
-  geo.computeVertexNormals();
-  const m = new THREE.Mesh(geo, mat);
-  m.castShadow = true;
-  m.receiveShadow = true;
-  return m;
-}
-
 function criarLinha(p1, p2, mat) {
   const geo = new THREE.BufferGeometry().setFromPoints([p1, p2]);
   return new THREE.Line(geo, mat);
 }
 
-// Criação da aba com alça (furo oblongo)
+// Alça superior com furo oblongo
 function criarPainelAlca(w, h, mat, matCorte) {
   const shape = new THREE.Shape();
   const rCanto = Math.min(20, h / 3);
@@ -391,13 +368,9 @@ function criarPainelAlca(w, h, mat, matCorte) {
   shape.lineTo(w/2, 0);
   shape.closePath();
 
-  // Furo da alça
+  // Furo oblongo
   const furo = new THREE.Path();
-  const fw = 90;
-  const fh = 25;
-  const fr = fh / 2;
-  const fy = h / 2;
-
+  const fw = 90, fh = 25, fr = fh / 2, fy = h / 2;
   furo.moveTo(-fw/2 + fr, fy - fr);
   furo.lineTo( fw/2 - fr, fy - fr);
   furo.absarc( fw/2 - fr, fy, fr, -Math.PI/2, Math.PI/2, false);
@@ -410,7 +383,6 @@ function criarPainelAlca(w, h, mat, matCorte) {
   const mesh = new THREE.Mesh(geo, mat);
   mesh.castShadow = true;
 
-  // Borda vermelha de corte no furo
   const ptsFuro = furo.getPoints();
   const geoFuro = new THREE.BufferGeometry().setFromPoints(ptsFuro.map(p => new THREE.Vector3(p.x, p.y, 0.1)));
   const borda = new THREE.LineLoop(geoFuro, matCorte);
@@ -419,77 +391,95 @@ function criarPainelAlca(w, h, mat, matCorte) {
   return mesh;
 }
 
-// Cria a Peça Lateral (Peça 2) com suas abas de cola e vincos reais
-function construirPecaLateral(ladoSign, mats, B, hApex, altLateral, abertura) {
+// =============================================================================
+// MODELAGEM FIEL DA PEÇA LATERAL (BERÇO EM V COM ABAS DE COLA)
+// =============================================================================
+// Conforme as fotos reais do papel cortado:
+// - A peça é um fole contínuo em V (duas asas unidas pelo vinco central).
+// - Nas laterais da peça existem as DUAS ABAS DE COLA que dobram 90° e colam
+//   perfeitamente contra a face interna da Frente e das Costas.
+// - No topo existe a aba horizontal de reforço (15mm) virada para dentro.
+// =============================================================================
+function construirPecaLateralReal(ladoSign, mats, B, hApex, altLateral, abertura) {
   const grp = new THREE.Group();
 
   const hB = B / 2;
-  const hLat = Math.min(hApex * 0.9, altLateral); // altura do vinco superior da lateral
-  const zAfastamento = (hB) * (1 - (hLat / hApex)); // profundidade Z no topo da lateral
+  const hLat = Math.min(hApex * 0.88, altLateral); // altura até onde sobe a lateral
+  const zTop = hB * (1 - (hLat / hApex));          // afastamento Z na altura hLat
 
-  // Largura do topo da peça lateral = distância entre frente e verso naquela altura
-  const topFrontZ =  zAfastamento;
-  const topBackZ  = -zAfastamento;
+  // Ângulo de inclinação das paredes do corpo
+  const angInclinacao = Math.atan2(hB, hApex);
 
-  // Pontos da base da peça lateral
+  // PONTOS AO LONGO DO CONTORNO LATERAL DO CORPO:
+  // Base (y = 0)
   const pBaseFront = new THREE.Vector3(0, 0,  hB);
   const pBaseBack  = new THREE.Vector3(0, 0, -hB);
 
-  // Pontos do topo da peça lateral (altura hLat)
-  const pTopFront  = new THREE.Vector3(0, hLat,  topFrontZ);
-  const pTopBack   = new THREE.Vector3(0, hLat,  topBackZ);
+  // Topo da lateral (y = hLat)
+  const pTopFront  = new THREE.Vector3(0, hLat,  zTop);
+  const pTopBack   = new THREE.Vector3(0, hLat, -zTop);
 
-  // Fole central: vinco que dobra para dentro quando a sacola fecha
-  const recuoFole = (1 - abertura) * 40 + 8; // recuo no eixo X para dentro da sacola
-  const xFole = -ladoSign * recuoFole;
-  const pFoleCentro = new THREE.Vector3(xFole, hLat * 0.45, 0);
+  // VINCO CENTRAL DO FOLE EM V (dobra para dentro da sacola):
+  // O recuo no eixo X vai para dentro da sacola (-ladoSign * recuo)
+  // Quando aberto (100%), o fole forma um V suave de profundidade ~25mm.
+  // Quando fecha (0%), o fole aprofunda para dentro para a sacola fechar plana.
+  const recuoX = -ladoSign * (22 + (1 - abertura) * 45);
+  const pSpineBase = new THREE.Vector3(recuoX, 0, 0);
+  const pSpineTop  = new THREE.Vector3(recuoX, hLat, 0);
 
-  // 1. Painel frontal do fole
-  grp.add(criarTri(pBaseFront, pTopFront, pFoleCentro, mats.lateral));
-  // 2. Painel traseiro do fole
-  grp.add(criarTri(pBaseBack,  pTopBack,  pFoleCentro, mats.lateral));
-  // 3. Painel inferior do fole
-  grp.add(criarTri(pBaseFront, pBaseBack, pFoleCentro, mats.lateral));
+  // 1. ASA FRONTAL DO FOLE (painel contínuo sem furos)
+  grp.add(criarQuad(pBaseFront, pTopFront, pSpineTop, pSpineBase, mats.lateralAsaFront));
+  grp.add(criarLinha(pBaseFront, pTopFront, mats.corte)); // aresta externa
+  grp.add(criarLinha(pTopFront, pSpineTop, mats.corte));  // aresta superior frontal
+  grp.add(criarLinha(pBaseFront, pSpineBase, mats.corte));// aresta inferior frontal
 
-  // Vincos internos do fole
-  grp.add(criarLinha(pBaseFront, pFoleCentro, mats.vinco));
-  grp.add(criarLinha(pBaseBack,  pFoleCentro, mats.vinco));
-  grp.add(criarLinha(pFoleCentro, new THREE.Vector3(xFole, hLat, 0), mats.vinco));
+  // 2. ASA TRASEIRA DO FOLE (painel contínuo sem furos)
+  grp.add(criarQuad(pSpineBase, pSpineTop, pTopBack, pBaseBack, mats.lateralAsaBack));
+  grp.add(criarLinha(pBaseBack, pTopBack, mats.corte));   // aresta externa
+  grp.add(criarLinha(pTopBack, pSpineTop, mats.corte));   // aresta superior traseira
+  grp.add(criarLinha(pBaseBack, pSpineBase, mats.corte)); // aresta inferior traseira
 
-  // 4. Borda superior com aba de 15mm virada para dentro (aba superior do original)
-  const abaAlt = 15;
-  const pAbaFront = new THREE.Vector3(-ladoSign * 2, hLat - abaAlt, topFrontZ * 0.92);
-  const pAbaBack  = new THREE.Vector3(-ladoSign * 2, hLat - abaAlt, topBackZ * 0.92);
-  grp.add(criarQuad(pTopBack, pTopFront, pAbaFront, pAbaBack, mats.lateralAbaSup));
-  grp.add(criarLinha(pTopFront, pTopBack, mats.vinco)); // vinco horizontal da aba superior
+  // 3. VINCO CENTRAL DE DOBRA (verde)
+  grp.add(criarLinha(pSpineBase, pSpineTop, mats.vinco));
 
-  // 5. ABAS DE COLA (Flaps que colam na face interna da Frente e Trás)
-  // Largura da aba de cola ~20mm, inclinada acompanhando a parede
+  // 4. ABAS DE COLA (colam nas paredes internas da Frente e das Costas)
+  // Cada aba tem 20mm de largura, paralela à parede inclinada
   const largCola = 22;
-  const pColaFront0 = new THREE.Vector3(-ladoSign * largCola, 0, hB - 2);
-  const pColaFront1 = new THREE.Vector3(-ladoSign * largCola, hLat * 0.85, topFrontZ - 2);
+  const xCola = -ladoSign * largCola;
 
-  const pColaBack0  = new THREE.Vector3(-ladoSign * largCola, 0, -hB + 2);
-  const pColaBack1  = new THREE.Vector3(-ladoSign * largCola, hLat * 0.85, topBackZ + 2);
+  // Vetor normal apontando para dentro ao longo da parede frontal
+  const pColaFrontBase = new THREE.Vector3(xCola, 0, hB);
+  const pColaFrontTop  = new THREE.Vector3(xCola, hLat, zTop);
 
-  // Painel de cola frontal
-  grp.add(criarQuad(pBaseFront, pTopFront, pColaFront1, pColaFront0, mats.abaCola));
+  // Vetor normal apontando para dentro ao longo da parede traseira
+  const pColaBackBase  = new THREE.Vector3(xCola, 0, -hB);
+  const pColaBackTop   = new THREE.Vector3(xCola, hLat, -zTop);
+
+  // Malha da aba de cola frontal (em amarelo/âmbar)
+  grp.add(criarQuad(pBaseFront, pTopFront, pColaFrontTop, pColaFrontBase, mats.abaCola));
   grp.add(criarLinha(pBaseFront, pTopFront, mats.vinco)); // vinco da aba de cola
-  grp.add(criarLinha(pColaFront0, pColaFront1, mats.corte));
+  grp.add(criarLinha(pColaFrontBase, pColaFrontTop, mats.corte));
 
-  // Painel de cola traseiro
-  grp.add(criarQuad(pBaseBack, pColaBack0, pColaBack1, pTopBack, mats.abaCola));
+  // Malha da aba de cola traseira (em amarelo/âmbar)
+  grp.add(criarQuad(pColaBackBase, pColaBackTop, pTopBack, pBaseBack, mats.abaCola));
   grp.add(criarLinha(pBaseBack, pTopBack, mats.vinco)); // vinco da aba de cola
-  grp.add(criarLinha(pColaBack0, pColaBack1, mats.corte));
+  grp.add(criarLinha(pColaBackBase, pColaBackTop, mats.corte));
 
-  // Cortes externos
-  grp.add(criarLinha(pBaseFront, pBaseBack, mats.corte));
+  // 5. ABA SUPERIOR DE ACABAMENTO (15mm virada para dentro)
+  const altAbaSup = 14;
+  const pHemFront = new THREE.Vector3(recuoX * 0.4, hLat - altAbaSup, zTop * 0.9);
+  const pHemBack  = new THREE.Vector3(recuoX * 0.4, hLat - altAbaSup, -zTop * 0.9);
+  const pHemSpine = new THREE.Vector3(recuoX, hLat - altAbaSup, 0);
+
+  grp.add(criarQuad(pTopFront, pSpineTop, pHemSpine, pHemFront, mats.lateralAbaSup));
+  grp.add(criarQuad(pSpineTop, pTopBack, pHemBack, pHemSpine, mats.lateralAbaSup));
+  grp.add(criarLinha(pTopFront, pSpineTop, mats.vinco));
+  grp.add(criarLinha(pSpineTop, pTopBack, mats.vinco));
 
   return grp;
 }
 
 function reconstruirModelo() {
-  // Limpa tudo
   [groupCorpo, groupLateralEsq, groupLateralDir].forEach(g => {
     while (g.children.length > 0) {
       const obj = g.children[0];
@@ -501,7 +491,7 @@ function reconstruirModelo() {
   const mats = criarMateriais();
 
   const A = params.A;
-  const B = params.B * params.abertura;
+  const B = params.B;
   const H = params.H;
   const aba = params.aba;
   const altLateral = params.altLateral;
@@ -510,9 +500,9 @@ function reconstruirModelo() {
   const hB = B / 2;
   const hApex = Math.sqrt(Math.max(10, A * A - hB * hB));
 
-  // =========================================================================
-  // PEÇA 1: CORPO (FRENTE + FUNDO + TRÁS + ALÇAS)
-  // =========================================================================
+  // -------------------------------------------------------------------------
+  // PEÇA 1: CORPO PRINCIPAL (FRENTE + FUNDO + TRÁS + ALÇAS)
+  // -------------------------------------------------------------------------
   const bFrontEsq = new THREE.Vector3(-hH, 0,  hB);
   const bFrontDir = new THREE.Vector3( hH, 0,  hB);
   const bBackEsq  = new THREE.Vector3(-hH, 0, -hB);
@@ -521,13 +511,13 @@ function reconstruirModelo() {
   const apexEsq   = new THREE.Vector3(-hH, hApex, 0);
   const apexDir   = new THREE.Vector3( hH, hApex, 0);
 
-  // Fundo
+  // Fundo (Face 3)
   groupCorpo.add(criarQuad(bBackEsq, bBackDir, bFrontDir, bFrontEsq, mats.corpoFundo));
 
-  // Frente
+  // Frente (Face 2)
   groupCorpo.add(criarQuad(bFrontEsq, bFrontDir, apexDir, apexEsq, mats.corpoFrente));
 
-  // Costas
+  // Costas (Face 4)
   groupCorpo.add(criarQuad(bBackDir, bBackEsq, apexEsq, apexDir, mats.corpoCostas));
 
   // Vincos do corpo
@@ -551,47 +541,45 @@ function reconstruirModelo() {
   alcaBack.rotation.y = Math.PI;
   groupCorpo.add(alcaBack);
 
-  // =========================================================================
-  // PEÇA 2: AS DUAS LATERAIS (PEÇAS SOLTAS ENCAIXADAS / COLADAS)
-  // =========================================================================
-  // Distância de explosão visual para demonstrar que são peças separadas
-  const distExplode = params.explode * 140; // afasta até 140mm para cada lado
+  // -------------------------------------------------------------------------
+  // PEÇA 2: AS DUAS LATERAIS ENCAIXADAS (COM SLIDER DE EXPLOSÃO)
+  // -------------------------------------------------------------------------
+  const distExplode = params.explode * 150; // afasta até 150mm
 
-  // Lateral Esquerda
-  const meshEsq = construirPecaLateral(-1, mats, B, hApex, altLateral, params.abertura);
+  // Peça Lateral Esquerda
+  const meshEsq = construirPecaLateralReal(-1, mats, B, hApex, altLateral, params.abertura);
   groupLateralEsq.position.set(-hH - distExplode, 0, 0);
   groupLateralEsq.add(meshEsq);
 
-  // Linha guia tracejada de encaixe (quando explodida)
-  if (params.explode > 0.05) {
-    const pOrig = new THREE.Vector3(-hH, altLateral/2, 0);
-    const pDest = new THREE.Vector3(-hH - distExplode, altLateral/2, 0);
-    const guia = criarLinha(pOrig, pDest, mats.guiaEncaixe);
+  // Linhas guia de montagem quando explodida
+  if (params.explode > 0.04) {
+    const pOrig = new THREE.Vector3(-hH, altLateral * 0.4, 0);
+    const pDest = new THREE.Vector3(-hH - distExplode, altLateral * 0.4, 0);
+    const guia = criarLinha(pOrig, pDest, mats.guia);
     guia.computeLineDistances();
     groupCorpo.add(guia);
   }
 
-  // Lateral Direita
-  const meshDir = construirPecaLateral(1, mats, B, hApex, altLateral, params.abertura);
+  // Peça Lateral Direita
+  const meshDir = construirPecaLateralReal(1, mats, B, hApex, altLateral, params.abertura);
   groupLateralDir.position.set(hH + distExplode, 0, 0);
   groupLateralDir.add(meshDir);
 
-  if (params.explode > 0.05) {
-    const pOrigD = new THREE.Vector3(hH, altLateral/2, 0);
-    const pDestD = new THREE.Vector3(hH + distExplode, altLateral/2, 0);
-    const guiaD = criarLinha(pOrigD, pDestD, mats.guiaEncaixe);
+  if (params.explode > 0.04) {
+    const pOrigD = new THREE.Vector3(hH, altLateral * 0.4, 0);
+    const pDestD = new THREE.Vector3(hH + distExplode, altLateral * 0.4, 0);
+    const guiaD = criarLinha(pOrigD, pDestD, mats.guia);
     guiaD.computeLineDistances();
     groupCorpo.add(guiaD);
   }
 
   // Métricas
   document.getElementById('mAltura').textContent = (hApex + aba).toFixed(0) + ' mm';
-  document.getElementById('mBase').textContent = params.B.toFixed(0) + ' × ' + H.toFixed(0) + ' mm';
-  document.getElementById('mLateral').textContent = 'Alt: ' + altLateral + ' mm | Topo: ' + params.B + ' mm';
+  document.getElementById('mBase').textContent = B.toFixed(0) + ' × ' + H.toFixed(0) + ' mm';
 }
 
 // =============================================================================
-// INTERAÇÃO E EVENTOS
+// INTERAÇÃO
 // =============================================================================
 function syncInputs() {
   const slA = document.getElementById('slA');
@@ -620,7 +608,7 @@ function syncInputs() {
       txtExp.textContent = 'Montada (Colada)';
       txtExp.style.color = '#38bdf8';
     } else {
-      txtExp.textContent = 'Peças Soltas (' + slExplode.value + '%)';
+      txtExp.textContent = 'Peça Solta (' + slExplode.value + '%)';
       txtExp.style.color = '#f59e0b';
     }
 
@@ -645,20 +633,21 @@ function setCameraView(vista) {
   const H = params.H;
   const A = params.A;
   const hApex = Math.sqrt(Math.max(10, A * A - (params.B/2) * (params.B/2)));
-  const centerY = hApex * 0.5;
-  const dist = Math.max(H, A) * 1.8;
+  const centerY = hApex * 0.45;
+  const dist = Math.max(H, A) * 1.6;
 
   controls.target.set(0, centerY, 0);
 
   if (vista === 'lateral') {
-    // Vista direta na peça lateral para ver o encaixe
+    // Vista lateral alinhada exatamente com o perfil do fole em V
     camera.position.set(-dist * 1.1, centerY, 0);
+  } else if (vista === 'persp') {
+    // Vista angular para ver a aba de cola por dentro
+    camera.position.set(-dist * 0.9, centerY * 1.3, dist * 0.55);
   } else if (vista === 'frente') {
     camera.position.set(0, centerY, dist);
   } else if (vista === 'topo') {
     camera.position.set(0, dist * 1.3, 10);
-  } else if (vista === 'iso') {
-    camera.position.set(-dist * 0.75, dist * 0.65, dist * 0.75);
   }
   controls.update();
 }
@@ -676,7 +665,7 @@ function animate() {
 }
 
 syncInputs();
-setCameraView('lateral'); // Abre já focando na peça lateral
+setCameraView('persp');
 animate();
 </script>
 </body>
