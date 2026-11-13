@@ -1,0 +1,5 @@
+output/
+*.svg
+*.pdf
+__pycache__/
+*.pyc
