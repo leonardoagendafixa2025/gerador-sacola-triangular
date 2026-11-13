@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Sacola Triangular – Visualizador 3D | Primacor</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:#111827; font-family:'Segoe UI',sans-serif; color:#eee; overflow:hidden; }
+  #cv { width:100vw; height:100vh; display:block; }
+
+  #painel {
+    position:fixed; top:18px; left:18px;
+    background:rgba(10,10,20,.82); border:1px solid #2d3748;
+    border-radius:14px; padding:18px 20px; width:245px;
+    backdrop-filter:blur(10px); z-index:10;
+  }
+  #painel h2 { font-size:10px; color:#718096; text-transform:uppercase; letter-spacing:1.5px; }
+  #painel h1 { font-size:15px; color:#fff; margin:4px 0 16px; font-weight:700; }
+
+  .campo { margin-bottom:11px; }
+  .campo label { font-size:11px; color:#9ca3af; display:flex; justify-content:space-between; margin-bottom:5px; }
+  .campo label span { color:#e94560; font-weight:700; font-size:12px; }
+  input[type=range] { width:100%; accent-color:#e94560; height:3px; cursor:pointer; }
+
+  .row2 { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:8px; }
+  .row2 input[type=number] {
+    background:#1f2937; border:1px solid #374151; color:#fff;
+    border-radius:7px; padding:6px 8px; font-size:12px; width:100%;
+    text-align:center;
+  }
+  .row2 label { font-size:10px; color:#6b7280; text-align:center; display:block; margin-top:3px; }
+
+  button {
+    width:100%; margin-top:10px; padding:10px;
+    background:linear-gradient(135deg,#e94560,#c0392b);
+    border:none; border-radius:9px; color:#fff;
+    font-size:13px; font-weight:700; cursor:pointer; letter-spacing:.5px;
+    transition:opacity .18s;
+  }
+  button:hover { opacity:.82; }
+
+  #stats {
+    margin-top:14px; padding-top:12px; border-top:1px solid #1f2937;
+    font-size:11px; color:#6b7280; line-height:2;
+  }
+  #stats b { color:#e2e8f0; }
+
+  #legenda {
+    position:fixed; bottom:18px; left:18px;
+    background:rgba(10,10,20,.75); border-radius:10px;
+    padding:11px 15px; font-size:11px; color:#9ca3af;
+    z-index:10; line-height:2.1; border:1px solid #1f2937;
+  }
+  .dot { display:inline-block; width:9px; height:9px; border-radius:2px; margin-right:7px; vertical-align:middle; }
+
+  #hint {
+    position:fixed; bottom:18px; right:18px;
+    font-size:11px; color:#4b5563; text-align:right; line-height:1.9;
+  }
+
+  #vista {
+    position:fixed; top:18px; right:18px;
+    display:flex; flex-direction:column; gap:7px; z-index:10;
+  }
+  #vista button {
+    width:auto; margin:0; padding:7px 13px; font-size:11px; letter-spacing:.3px;
+    background:rgba(10,10,20,.82); border:1px solid #374151;
+  }
+  #vista button:hover { background:#1f2937; opacity:1; }
+</style>
+</head>
+<body>
+<canvas id="cv"></canvas>
+
+<div id="painel">
+  <h2>Primacor</h2>
+  <h1>Sacola Triangular 3D</h1>
+
+  <div class="campo">
+    <label>A — Frente / Trás <span id="vA">300</span> mm</label>
+    <input type="range" id="rA" min="100" max="600" value="300" step="5">
+  </div>
+  <div class="campo">
+    <label>B — Abertura frontal <span id="vB">150</span> mm</label>
+    <input type="range" id="rB" min="50" max="400" value="150" step="5">
+  </div>
+  <div class="campo">
+    <label>H — Altura <span id="vH">400</span> mm</label>
+    <input type="range" id="rH" min="100" max="700" value="400" step="5">
+  </div>
+
+  <button id="btnGerar">▶  Atualizar modelo</button>
+
+  <div id="stats">
+    Profundidade: <b id="sD">—</b> mm<br>
+    Aba / alça: <b id="sAba">—</b> mm<br>
+    Fundo (cada peça): <b id="sFundo">—</b> mm<br>
+    Largura faca corpo: <b id="sWb">—</b> mm
+  </div>
+</div>
+
+<div id="vista">
+  <button onclick="camView('frente')">Vista Frontal</button>
+  <button onclick="camView('lateral')">Vista Lateral</button>
+  <button onclick="camView('topo')">Vista Topo</button>
+  <button onclick="camView('iso')">Isométrica</button>
+</div>
+
+<div id="legenda">
+  <div><span class="dot" style="background:#3b82f6"></span>Face frontal (B)</div>
+  <div><span class="dot" style="background:#8b5cf6"></span>Lados (A × 2)</div>
+  <div><span class="dot" style="background:#f59e0b"></span>Fundo montado</div>
+  <div><span class="dot" style="background:#e94560"></span>Alça (abertura)</div>
+  <div><span class="dot" style="background:#10b981"></span>Vincos / dobras</div>
+</div>
+
+<div id="hint">
+  🖱 Arrastar — rotacionar<br>
+  🖱 Scroll — zoom<br>
+  🖱 Dir — panorâmica
+</div>
+
+<script type="importmap">
+{"imports":{
+  "three":"https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.js",
+  "three/addons/":"https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/"
+}}
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+// ── Renderer ─────────────────────────────────────────────────────────────────
+const canvas = document.getElementById('cv');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias:true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x111827);
+scene.fog = new THREE.FogExp2(0x111827, 0.0004);
+
+const camera = new THREE.PerspectiveCamera(42, 1, 1, 15000);
+camera.position.set(600, 500, 800);
+
+const controls = new OrbitControls(camera, canvas);
+controls.enableDamping = true; controls.dampingFactor = 0.07;
+controls.minDistance = 80; controls.maxDistance = 4000;
+
+// ── Iluminação ────────────────────────────────────────────────────────────────
+scene.add(new THREE.AmbientLight(0xffffff, 0.55));
+const sun = new THREE.DirectionalLight(0xfff8f0, 1.4);
+sun.position.set(500, 900, 600); sun.castShadow = true;
+sun.shadow.mapSize.set(2048,2048);
+scene.add(sun);
+const rim = new THREE.DirectionalLight(0x6080ff, 0.5);
+rim.position.set(-400, 300, -500); scene.add(rim);
+const bot = new THREE.DirectionalLight(0xffffff, 0.2);
+bot.position.set(0,-500,0); scene.add(bot);
+
+// Grade
+const grid = new THREE.GridHelper(3000, 60, 0x1f2937, 0x1a2030);
+scene.add(grid);
+
+// ── Materiais ─────────────────────────────────────────────────────────────────
+const matFrente = new THREE.MeshPhongMaterial({color:0x3b82f6, transparent:true, opacity:.70, side:THREE.DoubleSide, shininess:60});
+const matLado   = new THREE.MeshPhongMaterial({color:0x8b5cf6, transparent:true, opacity:.70, side:THREE.DoubleSide, shininess:60});
+const matFundo  = new THREE.MeshPhongMaterial({color:0xf59e0b, transparent:true, opacity:.85, side:THREE.DoubleSide, shininess:40});
+const matAlca   = new THREE.MeshPhongMaterial({color:0xe94560, transparent:true, opacity:.60, side:THREE.DoubleSide});
+const matLinV   = new THREE.LineBasicMaterial({color:0x10b981, linewidth:2});
+const matLinC   = new THREE.LineBasicMaterial({color:0xe94560, linewidth:1.5});
+const matArest  = new THREE.LineBasicMaterial({color:0x1e40af, linewidth:1});
+const matArestL = new THREE.LineBasicMaterial({color:0x5b21b6, linewidth:1});
+
+// ── Grupo principal ───────────────────────────────────────────────────────────
+let grp = new THREE.Group();
+scene.add(grp);
+
+function mkFace(verts, mat) {
+  // verts: array de [x,y,z] formando 1 ou mais triângulos (flat shading)
+  const geo = new THREE.BufferGeometry();
+  const pos = [];
+  for (const v of verts) pos.push(...v);
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(pos,3));
+  geo.computeVertexNormals();
+  return new THREE.Mesh(geo, mat);
+}
+
+function linha(pts, mat) {
+  const geo = new THREE.BufferGeometry().setFromPoints(pts.map(p=>new THREE.Vector3(...p)));
+  return new THREE.Line(geo, mat);
+}
+
+// ── Construção do modelo ──────────────────────────────────────────────────────
+function build(A, B, H) {
+  while (grp.children.length) grp.remove(grp.children[0]);
+
+  // Geometria do triângulo
+  //   P0 = canto frontal esquerdo  (-B/2, y, 0)
+  //   P1 = canto frontal direito   ( B/2, y, 0)
+  //   P2 = apex traseiro           (   0, y, -depth)
+  //  onde depth = sqrt(A^2 - (B/2)^2)
+
+  const halfB = B / 2;
+  const depth = Math.sqrt(Math.max(0, A*A - halfB*halfB));
+
+  // Vértices base (y=0) e topo (y=H)
+  const p = {
+    fl_b: [-halfB, 0,  0],   // front-left  bottom
+    fr_b: [ halfB, 0,  0],   // front-right bottom
+    ap_b: [     0, 0, -depth], // apex       bottom
+    fl_t: [-halfB, H,  0],
+    fr_t: [ halfB, H,  0],
+    ap_t: [     0, H, -depth],
+  };
+
+  // ── Face frontal (retângulo B × H) ──────────────────────────────────────
+  const frenteFace = mkFace([
+    p.fl_b, p.fr_b, p.fr_t,
+    p.fl_b, p.fr_t, p.fl_t,
+  ], matFrente);
+  grp.add(frenteFace);
+  // aresta
+  grp.add(linha([p.fl_b, p.fr_b, p.fr_t, p.fl_t, p.fl_b], matArest));
+
+  // ── Face lateral esquerda (A × H) ────────────────────────────────────────
+  const ladoE = mkFace([
+    p.fl_b, p.ap_b, p.ap_t,
+    p.fl_b, p.ap_t, p.fl_t,
+  ], matLado);
+  grp.add(ladoE);
+  grp.add(linha([p.fl_b, p.ap_b, p.ap_t, p.fl_t, p.fl_b], matArestL));
+
+  // ── Face lateral direita (A × H) ─────────────────────────────────────────
+  const ladoD = mkFace([
+    p.fr_b, p.ap_b, p.ap_t,
+    p.fr_b, p.ap_t, p.fr_t,
+  ], matLado);
+  grp.add(ladoD);
+  grp.add(linha([p.fr_b, p.ap_b, p.ap_t, p.fr_t, p.fr_b], matArestL));
+
+  // ── Vincos verticais (dobras corpo) ──────────────────────────────────────
+  grp.add(linha([p.fl_b, p.fl_t], matLinV));
+  grp.add(linha([p.fr_b, p.fr_t], matLinV));
+  grp.add(linha([p.ap_b, p.ap_t], matLinV));
+
+  // ── Alças (na apex, topo) ────────────────────────────────────────────────
+  const alLarg = 25, alAlt = Math.min(90, H * 0.22);
+  const alY    = H - alAlt - 20;
+  // Abertura retangular arredondada na ponta
+  const alcaShape = new THREE.Shape();
+  const ar = alLarg / 2;
+  alcaShape.moveTo(-alLarg/2,     0);
+  alcaShape.lineTo(-alLarg/2,     alAlt - ar);
+  alcaShape.arc(0, 0, ar, Math.PI, 0, false);
+  alcaShape.lineTo( alLarg/2,     0);
+  alcaShape.closePath();
+  const alcaGeo = new THREE.ShapeGeometry(alcaShape);
+  const alca = new THREE.Mesh(alcaGeo, matAlca);
+  alca.position.set(0, alY, -depth - 1);
+  grp.add(alca);
+  // Outline
+  const alcaPts = [];
+  for (let i=0; i<=32; i++) {
+    const a = -Math.PI + (i/32)*Math.PI;
+    alcaPts.push([Math.cos(a)*alLarg/2, alAlt - ar + Math.sin(a)*ar, -depth]);
+  }
+  alcaPts.push([-alLarg/2, 0, -depth], [alLarg/2, 0, -depth]);
+  grp.add(linha(alcaPts.map(v=>[v[0], v[1]+alY, v[2]]), matLinC));
+
+  // ── FUNDO montado ────────────────────────────────────────────────────────
+  // O fundo, quando montado, cria uma base estilo "diamante":
+  // dois painéis triangulares que dobram para dentro da sacola.
+  // Cada peça do fundo parte da borda inferior de cada face
+  // e dobra até o centro da base.
+  //
+  // Centro da base da sacola:
+  const cx = 0, cz = -depth / 3; // centro geométrico do triângulo
+  const fundoY = -B * 0.18;      // quanto o fundo projeta para baixo
+
+  // Ponto central inferior do fundo
+  const fc = [cx, fundoY, cz];
+
+  // Painel fundo-frente: vem da aresta frontal (p.fl_b → p.fr_b) até fc
+  grp.add(mkFace([p.fl_b, p.fr_b, fc], matFundo));
+
+  // Painel fundo-esquerdo: aresta esq (p.fl_b → p.ap_b) até fc
+  grp.add(mkFace([p.fl_b, p.ap_b, fc], matFundo));
+
+  // Painel fundo-direito: aresta dir (p.fr_b → p.ap_b) até fc
+  grp.add(mkFace([p.fr_b, p.ap_b, fc], matFundo));
+
+  // Vincos do fundo
+  grp.add(linha([p.fl_b, fc], matLinV));
+  grp.add(linha([p.fr_b, fc], matLinV));
+  grp.add(linha([p.ap_b, fc], matLinV));
+
+  // Tampa superior (simplificada – mostra a abertura)
+  const topoShape = new THREE.Shape();
+  topoShape.moveTo(-halfB,  0);
+  topoShape.lineTo( halfB,  0);
+  topoShape.lineTo(      0, -depth);
+  topoShape.closePath();
+  // furo da alça (simplificado)
+  const furo = new THREE.Path();
+  furo.moveTo(-alLarg/2, -depth/2 - 5);
+  furo.absarc(0, -depth/2 - 5 + (alAlt-alLarg)/2, alLarg/2, -Math.PI, 0, false);
+  furo.lineTo(alLarg/2,  -depth/2 - 5);
+  furo.closePath();
+  topoShape.holes.push(furo);
+  const topoGeo = new THREE.ShapeGeometry(topoShape);
+  const topo = new THREE.Mesh(topoGeo, new THREE.MeshPhongMaterial({
+    color:0x1e3a5f, transparent:true, opacity:.45, side:THREE.DoubleSide
+  }));
+  topo.rotation.x = Math.PI/2;
+  topo.position.set(0, H, 0);
+  grp.add(topo);
+  // Aresta topo
+  grp.add(linha([p.fl_t, p.fr_t, p.ap_t, p.fl_t], matLinC));
+
+  // ── Info ─────────────────────────────────────────────────────────────────
+  document.getElementById('sD').textContent    = depth.toFixed(1);
+  document.getElementById('sAba').textContent  = (B/2).toFixed(1);
+  const fLarg = (A + B/3*2 + 20).toFixed(0);
+  const fAlt  = (2*(180*(H/400)+15*(H/400))).toFixed(0);
+  document.getElementById('sFundo').textContent = `${fLarg} × ${(parseFloat(fAlt)/2).toFixed(0)}`;
+  document.getElementById('sWb').textContent    = (B/2 + A + B + A + B/2).toFixed(0);
+
+  // Ajusta câmera
+  const diag = Math.sqrt(A*A + (depth||1)*(depth||1) + H*H);
+  controls.target.set(0, H/2, -depth/2);
+  camera.position.set(diag*.8, H*.65, diag*.8);
+  controls.update();
+}
+
+// ── Vista rápida ──────────────────────────────────────────────────────────────
+let curA = 300, curB = 150, curH = 400;
+window.camView = function(v) {
+  const depth = Math.sqrt(Math.max(0, curA*curA - (curB/2)*(curB/2)));
+  const cx = 0, cy = curH/2, cz = -depth/2;
+  controls.target.set(cx, cy, cz);
+  const d = Math.max(curA, curH) * 1.4;
+  if (v==='frente')   camera.position.set(cx, cy, cz + d);
+  if (v==='lateral')  camera.position.set(cx - d, cy, cz);
+  if (v==='topo')     camera.position.set(cx, cy + d, cz);
+  if (v==='iso')      camera.position.set(cx+d*.7, cy+d*.5, cz+d*.7);
+  controls.update();
+};
+
+// ── Sliders ───────────────────────────────────────────────────────────────────
+['A','B','H'].forEach(id => {
+  const r = document.getElementById('r'+id);
+  const lbl = document.getElementById('v'+id);
+  r.addEventListener('input', () => { lbl.textContent = r.value; });
+});
+
+document.getElementById('btnGerar').addEventListener('click', () => {
+  curA = +document.getElementById('rA').value;
+  curB = +document.getElementById('rB').value;
+  curH = +document.getElementById('rH').value;
+  build(curA, curB, curH);
+});
+
+// ── Resize ────────────────────────────────────────────────────────────────────
+function onResize() {
+  renderer.setSize(innerWidth, innerHeight);
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+}
+window.addEventListener('resize', onResize);
+onResize();
+
+// ── Loop ──────────────────────────────────────────────────────────────────────
+(function loop() {
+  requestAnimationFrame(loop);
+  controls.update();
+  renderer.render(scene, camera);
+})();
+
+// Inicial
+build(300, 150, 400);
+</script>
+</body>
+</html>
