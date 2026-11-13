@@ -550,23 +550,16 @@ function reconstruirModelo() {
   tampaEsqObj = construirTampaHierarquica(mats);
   setTampaFold(tampaEsqObj.pivots, params.foldProgress);
 
-  const wrapperEsq = new THREE.Group();
-  wrapperEsq.matrixAutoUpdate = false;
+  const modelEsq = new THREE.Group();
+  tampaEsqObj.rootGroup.scale.set(scaleB, -scaleY, 1);
+  tampaEsqObj.rootGroup.position.set(-160 * scaleB, 180 * scaleY, 0);
+  modelEsq.add(tampaEsqObj.rootGroup);
 
-  // Matriz de alinhamento matemático perfeito:
-  // X_bag = -hH - distExplode + Z_cad
-  // Y_bag = (180 - Y_cad) * scaleY
-  // Z_bag = (X_cad - 160) * scaleB
-  const mE = new THREE.Matrix4();
-  mE.set(
-    0,           0,       1,  -hH - distExplode,
-    0,     -scaleY,       0,   180.0 * scaleY,
-    scaleB,      0,       0,  -160.0 * scaleB,
-    0,           0,       0,   1
-  );
-  wrapperEsq.matrix.copy(mE);
-  wrapperEsq.add(tampaEsqObj.rootGroup);
-  groupTampaEsq.add(wrapperEsq);
+  const carrierEsq = new THREE.Group();
+  carrierEsq.position.set(-hH - distExplode, 0, 0);
+  carrierEsq.rotation.y = Math.PI / 2;
+  carrierEsq.add(modelEsq);
+  groupTampaEsq.add(carrierEsq);
 
   // -------------------------------------------------------------------------
   // TAMPA DIREITA (em X = +hH + distExplode):
@@ -574,23 +567,16 @@ function reconstruirModelo() {
   tampaDirObj = construirTampaHierarquica(mats);
   setTampaFold(tampaDirObj.pivots, params.foldProgress);
 
-  const wrapperDir = new THREE.Group();
-  wrapperDir.matrixAutoUpdate = false;
+  const modelDir = new THREE.Group();
+  tampaDirObj.rootGroup.scale.set(scaleB, -scaleY, 1);
+  tampaDirObj.rootGroup.position.set(-160 * scaleB, 180 * scaleY, 0);
+  modelDir.add(tampaDirObj.rootGroup);
 
-  // Matriz de alinhamento para o lado direito:
-  // X_bag = hH + distExplode - Z_cad (aponta para dentro)
-  // Y_bag = (180 - Y_cad) * scaleY
-  // Z_bag = (X_cad - 160) * scaleB
-  const mD = new THREE.Matrix4();
-  mD.set(
-    0,           0,      -1,   hH + distExplode,
-    0,     -scaleY,       0,   180.0 * scaleY,
-    scaleB,      0,       0,  -160.0 * scaleB,
-    0,           0,       0,   1
-  );
-  wrapperDir.matrix.copy(mD);
-  wrapperDir.add(tampaDirObj.rootGroup);
-  groupTampaDir.add(wrapperDir);
+  const carrierDir = new THREE.Group();
+  carrierDir.position.set(hH + distExplode, 0, 0);
+  carrierDir.rotation.y = -Math.PI / 2;
+  carrierDir.add(modelDir);
+  groupTampaDir.add(carrierDir);
 
   // Guias tracejadas quando explodida
   if (params.explode > 0.04) {
