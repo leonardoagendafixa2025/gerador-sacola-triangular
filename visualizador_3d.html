@@ -2,362 +2,583 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Sacola Triangular 3D | Primacor</title>
 <style>
-  *{margin:0;padding:0;box-sizing:border-box}
-  body{background:#0f172a;font-family:'Segoe UI',sans-serif;color:#e2e8f0;overflow:hidden}
-  canvas{display:block;width:100vw;height:100vh}
-
-  #ui{
-    position:fixed;top:16px;left:16px;
-    background:rgba(2,8,23,.88);border:1px solid #1e3a5f;
-    border-radius:14px;padding:18px 20px;width:238px;
-    backdrop-filter:blur(12px);z-index:9;
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    background: #0f172a;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    color: #e2e8f0;
+    overflow: hidden;
   }
-  #ui small{font-size:10px;color:#475569;text-transform:uppercase;letter-spacing:1.5px}
-  #ui h1{font-size:14px;font-weight:700;margin:3px 0 16px}
+  #canvas-container { width: 100vw; height: 100vh; position: absolute; top:0; left:0; }
 
-  .sl{margin-bottom:12px}
-  .sl-top{display:flex;justify-content:space-between;font-size:11px;color:#94a3b8;margin-bottom:5px}
-  .sl-top b{color:#f1f5f9;font-size:12px}
-  input[type=range]{width:100%;accent-color:#3b82f6;cursor:pointer}
+  /* Painel de Controle */
+  #painel {
+    position: fixed; top: 16px; left: 16px;
+    background: rgba(15, 23, 42, 0.92);
+    border: 1px solid #334155;
+    border-radius: 14px;
+    padding: 18px 20px;
+    width: 290px;
+    backdrop-filter: blur(12px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    z-index: 10;
+  }
+  .marca { font-size: 10px; color: #38bdf8; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; }
+  h1 { font-size: 16px; font-weight: 700; margin: 4px 0 14px; color: #fff; }
 
-  .row{display:flex;gap:7px;margin-top:3px}
-  .row input[type=number]{
-    flex:1;background:#0f172a;border:1px solid #1e3a5f;color:#f1f5f9;
-    border-radius:7px;padding:5px 7px;font-size:12px;text-align:center
+  .grupo-campo { margin-bottom: 12px; }
+  .label-row { display: flex; justify-content: space-between; font-size: 12px; color: #94a3b8; margin-bottom: 4px; }
+  .label-row b { color: #f8fafc; font-size: 13px; }
+  .label-row span { color: #64748b; font-size: 11px; }
+
+  input[type=range] {
+    width: 100%;
+    accent-color: #38bdf8;
+    height: 4px;
+    background: #1e293b;
+    border-radius: 2px;
+    cursor: pointer;
   }
 
-  #btnOk{
-    display:block;width:100%;margin-top:10px;padding:9px;
-    background:linear-gradient(135deg,#2563eb,#1d4ed8);
-    border:none;border-radius:9px;color:#fff;
-    font-size:13px;font-weight:700;cursor:pointer;letter-spacing:.4px
+  .botoes-modo {
+    display: flex; gap: 6px; margin: 14px 0 10px;
   }
-  #btnOk:hover{filter:brightness(1.15)}
-
-  #info{margin-top:13px;padding-top:11px;border-top:1px solid #1e3a5f;font-size:11px;color:#64748b;line-height:2}
-  #info b{color:#cbd5e1}
-
-  /* Vistas */
-  #vistas{position:fixed;top:16px;right:16px;display:flex;flex-direction:column;gap:6px;z-index:9}
-  .vbtn{
-    background:rgba(2,8,23,.82);border:1px solid #1e3a5f;color:#94a3b8;
-    border-radius:8px;padding:7px 13px;font-size:11px;cursor:pointer;
-    transition:background .15s,color .15s
+  .btn-modo {
+    flex: 1; padding: 7px 4px; font-size: 11px; font-weight: 600;
+    background: #1e293b; color: #94a3b8; border: 1px solid #334155;
+    border-radius: 6px; cursor: pointer; transition: all 0.2s;
   }
-  .vbtn:hover{background:#1e3a5f;color:#e2e8f0}
-
-  /* Legenda */
-  #leg{
-    position:fixed;bottom:16px;left:16px;
-    background:rgba(2,8,23,.82);border:1px solid #1e3a5f;border-radius:10px;
-    padding:10px 14px;font-size:11px;color:#94a3b8;line-height:2.1;z-index:9
+  .btn-modo.ativo, .btn-modo:hover {
+    background: #0284c7; color: #fff; border-color: #38bdf8;
   }
-  .dot{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:6px;vertical-align:middle}
 
-  #dica{position:fixed;bottom:16px;right:16px;font-size:11px;color:#334155;text-align:right;line-height:2}
+  /* Estatísticas calculadas */
+  #metricas {
+    margin-top: 12px; padding-top: 12px;
+    border-top: 1px solid #1e293b;
+    font-size: 11px; line-height: 1.8; color: #94a3b8;
+  }
+  #metricas div { display: flex; justify-content: space-between; }
+  #metricas b { color: #e2e8f0; }
+
+  /* Vistas rápidas de câmera */
+  #vistas {
+    position: fixed; top: 16px; right: 16px;
+    display: flex; flex-direction: column; gap: 6px; z-index: 10;
+  }
+  .btn-vista {
+    background: rgba(15, 23, 42, 0.85);
+    border: 1px solid #334155;
+    color: #94a3b8;
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-size: 11px; font-weight: 600;
+    cursor: pointer;
+    backdrop-filter: blur(8px);
+    transition: all 0.2s;
+  }
+  .btn-vista:hover { background: #1e293b; color: #fff; border-color: #38bdf8; }
+
+  /* Legenda das peças */
+  #legenda {
+    position: fixed; bottom: 16px; left: 16px;
+    background: rgba(15, 23, 42, 0.88);
+    border: 1px solid #334155;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 11px;
+    color: #94a3b8;
+    line-height: 1.9;
+    z-index: 10;
+  }
+  .dot { display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-right: 6px; vertical-align: middle; }
+
+  /* Dicas */
+  #dica {
+    position: fixed; bottom: 16px; right: 16px;
+    font-size: 11px; color: #475569; text-align: right; line-height: 1.8;
+  }
 </style>
+<!-- Bibliotecas locais: 100% offline via script clássico (funciona sem servidor HTTP) -->
+<script src="libs/three.min.js"></script>
+<script src="libs/OrbitControls.classic.js"></script>
 </head>
 <body>
 
-<div id="ui">
-  <small>Primacor</small>
-  <h1>Sacola Triangular — 3D</h1>
+<div id="canvas-container"></div>
 
-  <div class="sl">
-    <div class="sl-top">A — Painel Lateral<span><b id="vA">300</b> mm</span></div>
-    <input type="range" id="rA" min="100" max="600" value="300" step="5">
-  </div>
-  <div class="sl">
-    <div class="sl-top">B — Face Frontal<span><b id="vB">150</b> mm</span></div>
-    <input type="range" id="rB" min="50"  max="400" value="150" step="5">
-  </div>
-  <div class="sl">
-    <div class="sl-top">H — Altura<span><b id="vH">400</b> mm</span></div>
-    <input type="range" id="rH" min="100" max="700" value="400" step="5">
+<div id="painel">
+  <div class="marca">Primacor Gráfica</div>
+  <h1>Sacola Triangular 3D</h1>
+
+  <div class="grupo-campo">
+    <div class="label-row">
+      <span>Face inclinada (A)</span>
+      <b><span id="txtA">300</span> mm</b>
+    </div>
+    <input type="range" id="slA" min="150" max="600" value="300" step="5">
   </div>
 
-  <button id="btnOk">▶  Gerar modelo</button>
+  <div class="grupo-campo">
+    <div class="label-row">
+      <span>Largura do Fundo (B)</span>
+      <b><span id="txtB">150</span> mm</b>
+    </div>
+    <input type="range" id="slB" min="60" max="350" value="150" step="5">
+  </div>
 
-  <div id="info">
-    Profundidade real: <b id="iD">—</b><br>
-    Largura faca: <b id="iW">—</b><br>
-    Fundo (cada peça): <b id="iF">—</b>
+  <div class="grupo-campo">
+    <div class="label-row">
+      <span>Largura Frontal (H / Alça)</span>
+      <b><span id="txtH">400</span> mm</b>
+    </div>
+    <input type="range" id="slH" min="150" max="700" value="400" step="5">
+  </div>
+
+  <div class="grupo-campo">
+    <div class="label-row">
+      <span>Aba da Alça (aba)</span>
+      <b><span id="txtAba">75</span> mm</b>
+    </div>
+    <input type="range" id="slAba" min="30" max="150" value="75" step="5">
+  </div>
+
+  <div class="grupo-campo">
+    <div class="label-row">
+      <span>Abertura da Sacola</span>
+      <b><span id="txtAbertura">100</span>%</b>
+    </div>
+    <input type="range" id="slAbertura" min="0" max="100" value="100" step="1">
+  </div>
+
+  <div class="botoes-modo">
+    <button class="btn-modo ativo" id="modoReal" onclick="setModo('real')">Boutique (Branca)</button>
+    <button class="btn-modo" id="modoFaca" onclick="setModo('faca')">Faca Técnica</button>
+  </div>
+
+  <div id="metricas">
+    <div><span>Altura total sacola:</span> <b id="mAltura">—</b></div>
+    <div><span>Profundidade (base B):</span> <b id="mBase">—</b></div>
+    <div><span>Comprimento (H):</span> <b id="mLargura">—</b></div>
+    <div><span>Chapa aberta corpo:</span> <b id="mChapa">—</b></div>
   </div>
 </div>
 
 <div id="vistas">
-  <button class="vbtn" data-v="front">👁 Frontal (B)</button>
-  <button class="vbtn" data-v="side">👁 Lateral (A)</button>
-  <button class="vbtn" data-v="top">👁 Topo</button>
-  <button class="vbtn" data-v="iso">👁 Isométrica</button>
+  <button class="btn-vista" onclick="setCameraView('frente')">👁 Frente</button>
+  <button class="btn-vista" onclick="setCameraView('lateral')">👁 Lateral (Triângulo)</button>
+  <button class="btn-vista" onclick="setCameraView('topo')">👁 Topo (Alça)</button>
+  <button class="btn-vista" onclick="setCameraView('iso')">👁 Isométrica</button>
 </div>
 
-<div id="leg">
-  <div><span class="dot" style="background:#2563eb"></span>Face frontal — largura B</div>
-  <div><span class="dot" style="background:#7c3aed"></span>Painéis laterais — largura A (×2)</div>
-  <div><span class="dot" style="background:#d97706"></span>Fundo montado</div>
-  <div><span class="dot" style="background:#dc2626"></span>Abertura da alça</div>
-  <div><span class="dot" style="background:#16a34a"></span>Vincos / dobras</div>
+<div id="legenda">
+  <div><span class="dot" style="background:#f8fafc; border:1px solid #94a3b8"></span> Peça 1: Corpo (Frente + Fundo + Trás + Alças)</div>
+  <div><span class="dot" style="background:#38bdf8"></span> Peça 2: Fole Lateral Esquerdo</div>
+  <div><span class="dot" style="background:#0284c7"></span> Peça 2: Fole Lateral Direito</div>
+  <div><span class="dot" style="background:#22c55e"></span> Vincos de dobra</div>
 </div>
 
-<div id="dica">🖱 Esquerdo: girar &nbsp;|&nbsp; Scroll: zoom &nbsp;|&nbsp; Direito: mover</div>
+<div id="dica">
+  Botão esquerdo: girar &nbsp;|&nbsp; Scroll: zoom &nbsp;|&nbsp; Botão direito: mover
+</div>
 
-<script type="importmap">
-{"imports":{
-  "three":"./libs/three.module.min.js",
-  "three/addons/":"./libs/"
-}}
-</script>
-<script type="module">
-import * as THREE from 'three';
-import { OrbitControls } from 'three/addons/OrbitControls.js';
+<script>
+// =============================================================================
+// VERIFICAÇÃO INICIAL DAS BIBLIOTECAS LOCAIS
+// =============================================================================
+if (typeof THREE === 'undefined') {
+  document.body.innerHTML = '<div style="padding:40px;color:#f87171;font-family:sans-serif;">' +
+    '<h2>Erro: Three.js não encontrado localmente em libs/three.min.js</h2>' +
+    '<p>Verifique se a pasta libs/ contém os arquivos three.min.js e OrbitControls.classic.js.</p></div>';
+  throw new Error('Three.js não carregado');
+}
 
-// ─── Renderer ───────────────────────────────────────────────────────────────
-const renderer = new THREE.WebGLRenderer({antialias:true});
-renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+// =============================================================================
+// CENA, RENDERER, CÂMERA E CONTROLES
+// =============================================================================
+const container = document.getElementById('canvas-container');
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.shadowMap.enabled = true;
-document.body.appendChild(renderer.domElement);
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.05;
+container.appendChild(renderer.domElement);
 
-const scene  = new THREE.Scene();
+const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x0f172a);
-scene.fog = new THREE.FogExp2(0x0f172a, 0.00035);
+scene.fog = new THREE.FogExp2(0x0f172a, 0.0003);
 
-const camera = new THREE.PerspectiveCamera(40, 1, 1, 20000);
-const controls = new OrbitControls(camera, renderer.domElement);
+const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 1, 10000);
+const controls = new THREE.OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
-controls.dampingFactor = 0.07;
-controls.minDistance = 50;
-controls.maxDistance = 6000;
+controls.dampingFactor = 0.06;
+controls.minDistance = 100;
+controls.maxDistance = 4000;
 
-// ─── Iluminação ─────────────────────────────────────────────────────────────
-scene.add(new THREE.AmbientLight(0xffffff, 0.6));
-const sun = new THREE.DirectionalLight(0xfff0e0, 1.3);
-sun.position.set(400,900,600); sun.castShadow=true;
-sun.shadow.mapSize.set(2048,2048);
-scene.add(sun);
-scene.add(Object.assign(new THREE.DirectionalLight(0x8899ff,.4),{position:{set:()=>{},x:-300,y:200,z:-400}}));
-const fill = new THREE.DirectionalLight(0x8899ff,.4);
-fill.position.set(-300,200,-400);
-scene.add(fill);
-const bot = new THREE.DirectionalLight(0xffffff,.18);
-bot.position.set(0,-600,0);
-scene.add(bot);
+// Iluminação realista de estúdio
+const ambLight = new THREE.AmbientLight(0xffffff, 0.65);
+scene.add(ambLight);
 
-// Grade de chão
-const grid = new THREE.GridHelper(4000,80,0x1e293b,0x162032);
-grid.position.y = -1;
-scene.add(grid);
+const keyLight = new THREE.DirectionalLight(0xffffff, 1.2);
+keyLight.position.set(500, 1000, 600);
+keyLight.castShadow = true;
+keyLight.shadow.mapSize.width = 2048;
+keyLight.shadow.mapSize.height = 2048;
+keyLight.shadow.camera.near = 100;
+keyLight.shadow.camera.far = 3000;
+const d = 800;
+keyLight.shadow.camera.left = -d;
+keyLight.shadow.camera.right = d;
+keyLight.shadow.camera.top = d;
+keyLight.shadow.camera.bottom = -d;
+scene.add(keyLight);
 
-// ─── Helpers ────────────────────────────────────────────────────────────────
-function matMesh(hex, opacity=.75){
-  return new THREE.MeshPhongMaterial({
-    color:hex, transparent:true, opacity,
-    side:THREE.DoubleSide, shininess:50
-  });
-}
-function matLine(hex){ return new THREE.LineBasicMaterial({color:hex}); }
+const fillLight = new THREE.DirectionalLight(0x93c5fd, 0.5);
+fillLight.position.set(-500, 400, -400);
+scene.add(fillLight);
 
-function quad(a,b,c,d, mat){
-  // dois triângulos: a-b-c e a-c-d
-  const geo = new THREE.BufferGeometry();
-  geo.setAttribute('position', new THREE.Float32BufferAttribute([
-    a.x,a.y,a.z, b.x,b.y,b.z, c.x,c.y,c.z,
-    a.x,a.y,a.z, c.x,c.y,c.z, d.x,d.y,d.z
-  ],3));
-  geo.computeVertexNormals();
-  const m = new THREE.Mesh(geo, mat);
-  m.castShadow = m.receiveShadow = true;
-  return m;
-}
-function tri(a,b,c, mat){
-  const geo = new THREE.BufferGeometry();
-  geo.setAttribute('position', new THREE.Float32BufferAttribute([
-    a.x,a.y,a.z, b.x,b.y,b.z, c.x,c.y,c.z
-  ],3));
-  geo.computeVertexNormals();
-  const m = new THREE.Mesh(geo, mat);
-  m.castShadow = m.receiveShadow = true;
-  return m;
-}
-function polyLine(pts, mat){
-  const geo = new THREE.BufferGeometry().setFromPoints(pts);
-  return new THREE.Line(geo, mat);
-}
+const backLight = new THREE.DirectionalLight(0xffffff, 0.4);
+backLight.position.set(0, 300, -800);
+scene.add(backLight);
 
-// ─── Grupo da sacola ────────────────────────────────────────────────────────
-let grp = new THREE.Group();
-scene.add(grp);
+// Chão com sombra suave e grade discreta
+const groundGeo = new THREE.PlaneGeometry(6000, 6000);
+const groundMat = new THREE.ShadowMaterial({ opacity: 0.35 });
+const ground = new THREE.Mesh(groundGeo, groundMat);
+ground.rotation.x = -Math.PI / 2;
+ground.receiveShadow = true;
+scene.add(ground);
 
-let _A=300, _B=150, _H=400; // estado atual
+const gridHelper = new THREE.GridHelper(3000, 60, 0x334155, 0x1e293b);
+gridHelper.position.y = -0.5;
+scene.add(gridHelper);
 
-function build(A, B, H){
-  _A=A; _B=B; _H=H;
+// =============================================================================
+// MATERIAIS
+// =============================================================================
+let modoVisualizacao = 'real'; // 'real' ou 'faca'
 
-  // Limpa
-  grp.clear();
-
-  // ── Geometria base ──────────────────────────────────────────────────────
-  // Seção transversal: triângulo isósceles
-  //   P_esq  = (-B/2, y, 0)   ← aresta frontal esquerda
-  //   P_dir  = ( B/2, y, 0)   ← aresta frontal direita
-  //   P_apex = (  0,  y, -D)  ← costura traseira (onde as abas colam)
-  //
-  // D = profundidade = √(A² − (B/2)²)
-
-  const hB = B/2;
-  const D  = Math.sqrt(Math.max(0, A*A - hB*hB));
-
-  // Vértices — bottom (y=0) e top (y=H)
-  const BL = new THREE.Vector3(-hB, 0,  0);   // bottom-left  (front)
-  const BR = new THREE.Vector3( hB, 0,  0);   // bottom-right (front)
-  const BA = new THREE.Vector3(  0, 0, -D);   // bottom-apex  (back)
-  const TL = new THREE.Vector3(-hB, H,  0);   // top-left
-  const TR = new THREE.Vector3( hB, H,  0);   // top-right
-  const TA = new THREE.Vector3(  0, H, -D);   // top-apex
-
-  // ── FACE FRONTAL (azul, largura = B) ───────────────────────────────────
-  grp.add(quad(BL, BR, TR, TL, matMesh(0x2563eb, .72)));
-  // aresta frontal
-  grp.add(polyLine([BL,BR,TR,TL,BL], matLine(0x60a5fa)));
-
-  // ── FACE LATERAL ESQUERDA (roxo, largura = A) ──────────────────────────
-  grp.add(quad(BL, BA, TA, TL, matMesh(0x7c3aed, .68)));
-  grp.add(polyLine([BL,BA,TA,TL,BL], matLine(0xa78bfa)));
-
-  // ── FACE LATERAL DIREITA (roxo, largura = A) ───────────────────────────
-  grp.add(quad(BR, BA, TA, TR, matMesh(0x6d28d9, .68)));
-  grp.add(polyLine([BR,BA,TA,TR,BR], matLine(0xa78bfa)));
-
-  // ── VINCOS VERTICAIS (dobras nos cantos) ────────────────────────────────
-  const vMat = matLine(0x16a34a);
-  grp.add(polyLine([BL,TL], vMat));  // aresta frontal esq
-  grp.add(polyLine([BR,TR], vMat));  // aresta frontal dir
-  grp.add(polyLine([BA,TA], vMat));  // aresta apex (costura)
-
-  // ── FUNDO montado ────────────────────────────────────────────────────────
-  // As duas peças do fundo dobram para dentro formando 3 painéis triangulares
-  // que se encontram no centroide da base.
-  // Centroide do triângulo de base:
-  const fMat = matMesh(0xd97706, .88);
-  const CX   = (BL.x + BR.x + BA.x)/3;   // = 0
-  const CZ   = (BL.z + BR.z + BA.z)/3;   // = -D/3
-  const CY   = 0;                          // fundo plano
-
-  const FC = new THREE.Vector3(CX, CY, CZ);  // centro do fundo
-
-  // Painel 1: aresta frontal (BL→BR) → centro
-  grp.add(tri(BL, BR, FC, fMat));
-  // Painel 2: aresta lateral esq (BL→BA) → centro
-  grp.add(tri(BL, BA, FC, fMat));
-  // Painel 3: aresta lateral dir (BR→BA) → centro
-  grp.add(tri(BR, BA, FC, fMat));
-  // Vincos do fundo (amarelo)
-  const fVMat = matLine(0xfbbf24);
-  grp.add(polyLine([BL, FC], fVMat));
-  grp.add(polyLine([BR, FC], fVMat));
-  grp.add(polyLine([BA, FC], fVMat));
-
-  // ── TOPO (tampa aberta, contorno apenas) ───────────────────────────────
-  grp.add(polyLine([TL, TR, TA, TL], matLine(0xdc2626)));
-
-  // ── ALÇA (abertura na costura traseira) ────────────────────────────────
-  // No produto real, a alça é uma abertura oblonga no topo do apex.
-  const aLarg = Math.min(25, B*0.15);
-  const aAlt  = Math.min(90, H*0.20);
-  const aY0   = H - aAlt - 25;         // y inicial da alça
-  const aY1   = aY0 + aAlt;            // y final
-
-  // Arco superior da alça (meia-elipse)
-  const alcPts = [];
-  const r = aLarg/2;
-  for(let i=0;i<=20;i++){
-    const ang = Math.PI - (i/20)*Math.PI;
-    alcPts.push(new THREE.Vector3(Math.cos(ang)*r, aY0 + (aY1-aY0)/2 + Math.sin(ang)*r, -D));
+function criarMateriais() {
+  if (modoVisualizacao === 'real') {
+    return {
+      frente: new THREE.MeshStandardMaterial({
+        color: 0xf8fafc, roughness: 0.35, metalness: 0.05, side: THREE.DoubleSide
+      }),
+      costas: new THREE.MeshStandardMaterial({
+        color: 0xf1f5f9, roughness: 0.35, metalness: 0.05, side: THREE.DoubleSide
+      }),
+      fundo: new THREE.MeshStandardMaterial({
+        color: 0xe2e8f0, roughness: 0.4, metalness: 0.05, side: THREE.DoubleSide
+      }),
+      foleEsq: new THREE.MeshStandardMaterial({
+        color: 0x38bdf8, roughness: 0.4, metalness: 0.1, side: THREE.DoubleSide
+      }),
+      foleDir: new THREE.MeshStandardMaterial({
+        color: 0x0284c7, roughness: 0.4, metalness: 0.1, side: THREE.DoubleSide
+      }),
+      alcaBorda: new THREE.LineBasicMaterial({ color: 0x94a3b8, linewidth: 2 }),
+      vinco: new THREE.LineBasicMaterial({ color: 0x22c55e, linewidth: 2 }),
+      corte: new THREE.LineBasicMaterial({ color: 0xef4444, linewidth: 2 })
+    };
+  } else {
+    // Modo faca técnica
+    return {
+      frente: new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: false, transparent: true, opacity: 0.85, side: THREE.DoubleSide }),
+      costas: new THREE.MeshBasicMaterial({ color: 0xf8fafc, wireframe: false, transparent: true, opacity: 0.85, side: THREE.DoubleSide }),
+      fundo:  new THREE.MeshBasicMaterial({ color: 0xf1f5f9, wireframe: false, transparent: true, opacity: 0.85, side: THREE.DoubleSide }),
+      foleEsq: new THREE.MeshBasicMaterial({ color: 0xdbeafe, wireframe: false, transparent: true, opacity: 0.85, side: THREE.DoubleSide }),
+      foleDir: new THREE.MeshBasicMaterial({ color: 0xbfdbfe, wireframe: false, transparent: true, opacity: 0.85, side: THREE.DoubleSide }),
+      alcaBorda: new THREE.LineBasicMaterial({ color: 0xef4444, linewidth: 2 }),
+      vinco: new THREE.LineBasicMaterial({ color: 0x22c55e, linewidth: 2 }),
+      corte: new THREE.LineBasicMaterial({ color: 0xef4444, linewidth: 2 })
+    };
   }
-  // Lados da alça
-  alcPts.unshift(new THREE.Vector3(-r, aY0, -D));
-  alcPts.push(   new THREE.Vector3( r, aY0, -D));
+}
 
-  grp.add(polyLine(alcPts, matLine(0xdc2626)));
+// =============================================================================
+// GEOMETRIA REAL DA SACOLA TRIANGULAR
+// =============================================================================
+// A sacola triangular tipo boutique é uma tenda prismática:
+// - Comprimento (eixo X) = H (da esquerda à direita ao longo da alça)
+// - Base retangular no chão (eixo Z) = B (profundidade no apoio)
+// - Faces inclinadas frontal e traseira = A (comprimento da face inclinada)
+// - Altura do cume/apex (eixo Y): h_apex = sqrt(A^2 - (B/2)^2)
+// - Abas da alça no topo: estendem-se verticalmente para cima por altura `aba`
+// - Laterais (peça 2 / fole sanfonado): fecham as duas pontas triangulares em X = -H/2 e X = +H/2
+// =============================================================================
 
-  // Plano da alça
-  const alcaShape = new THREE.Shape();
-  alcaShape.moveTo(-r, aY0);
-  alcaShape.lineTo(-r, aY0+(aY1-aY0)/2);
-  alcaShape.absarc(0, aY0+(aY1-aY0)/2, r, Math.PI, 0, false);
-  alcaShape.lineTo( r, aY0);
-  alcaShape.closePath();
-  const alcaGeo = new THREE.ShapeGeometry(alcaShape);
-  const alcaMesh = new THREE.Mesh(alcaGeo, matMesh(0xdc2626, .45));
-  alcaMesh.rotation.y = 0;
-  alcaMesh.position.set(0, 0, -D - .5);
-  grp.add(alcaMesh);
+const bagGroup = new THREE.Group();
+scene.add(bagGroup);
 
-  // ── Painel info ─────────────────────────────────────────────────────────
-  document.getElementById('iD').textContent = D.toFixed(1)+' mm';
-  document.getElementById('iW').textContent = (hB+A+B+A+hB).toFixed(0)+' mm';
-  const fLarg = (A + B/3*2 + 20).toFixed(0);
-  document.getElementById('iF').textContent = `${fLarg} mm larg.`;
+// Geometria de retângulo 3D
+function criarPainelRetangular(v0, v1, v2, v3, material) {
+  const geo = new THREE.BufferGeometry();
+  const verts = new Float32Array([
+    v0.x, v0.y, v0.z,   v1.x, v1.y, v1.z,   v2.x, v2.y, v2.z,
+    v0.x, v0.y, v0.z,   v2.x, v2.y, v2.z,   v3.x, v3.y, v3.z
+  ]);
+  geo.setAttribute('position', new THREE.BufferAttribute(verts, 3));
+  geo.computeVertexNormals();
+  const mesh = new THREE.Mesh(geo, material);
+  mesh.castShadow = true;
+  mesh.receiveShadow = true;
+  return mesh;
+}
 
-  // ── Câmera inicial: olhando da frente-direita, levemente acima ─────────
-  const cx = 0, cy = H/2, cz = -D/2;
-  controls.target.set(cx, cy, cz);
+// Triângulo 3D
+function criarTriangulo(v0, v1, v2, material) {
+  const geo = new THREE.BufferGeometry();
+  const verts = new Float32Array([
+    v0.x, v0.y, v0.z,   v1.x, v1.y, v1.z,   v2.x, v2.y, v2.z
+  ]);
+  geo.setAttribute('position', new THREE.BufferAttribute(verts, 3));
+  geo.computeVertexNormals();
+  const mesh = new THREE.Mesh(geo, material);
+  mesh.castShadow = true;
+  mesh.receiveShadow = true;
+  return mesh;
+}
 
-  // Posição: na frente do painel B, levemente à direita e acima
-  camera.position.set(
-    hB + A*0.7,     // X: à direita do eixo
-    H  * 0.65,      // Y: a ~65% da altura
-    D  * 2.0        // Z: em frente ao painel frontal
-  );
+// Linha de vinco/corte
+function criarLinha(p1, p2, material) {
+  const geo = new THREE.BufferGeometry().setFromPoints([p1, p2]);
+  return new THREE.Line(geo, material);
+}
+
+// Painel de alça com furo oblongo
+function criarPainelAlcaComFuro(larguraH, alturaAba, alcaLarg, alcaAlt, material, materialBorda) {
+  const shape = new THREE.Shape();
+  const w = larguraH;
+  const h = alturaAba;
+  const rCanto = Math.min(20, alturaAba / 3);
+
+  // Contorno com cantos superiores arredondados
+  shape.moveTo(-w/2, 0);
+  shape.lineTo(-w/2, h - rCanto);
+  shape.quadraticCurveTo(-w/2, h, -w/2 + rCanto, h);
+  shape.lineTo(w/2 - rCanto, h);
+  shape.quadraticCurveTo(w/2, h, w/2, h - rCanto);
+  shape.lineTo(w/2, 0);
+  shape.closePath();
+
+  // Furo oblongo da alça centralizado
+  const furo = new THREE.Path();
+  const fw = alcaAlt;  // comprimento horizontal da alça
+  const fh = alcaLarg; // altura vertical da abertura
+  const fr = fh / 2;   // raio dos cantos
+  const fy = h / 2;    // altura central do furo
+
+  furo.moveTo(-fw/2 + fr, fy - fr);
+  furo.lineTo( fw/2 - fr, fy - fr);
+  furo.absarc( fw/2 - fr, fy, fr, -Math.PI/2, Math.PI/2, false);
+  furo.lineTo(-fw/2 + fr, fy + fr);
+  furo.absarc(-fw/2 + fr, fy, fr, Math.PI/2, -Math.PI/2, false);
+  furo.closePath();
+  shape.holes.push(furo);
+
+  const geo = new THREE.ShapeGeometry(shape);
+  const mesh = new THREE.Mesh(geo, material);
+  mesh.castShadow = true;
+
+  // Contorno do furo
+  const ptsFuro = furo.getPoints();
+  const geoFuro = new THREE.BufferGeometry().setFromPoints(ptsFuro.map(p => new THREE.Vector3(p.x, p.y, 0.1)));
+  const borda = new THREE.LineLoop(geoFuro, materialBorda);
+  mesh.add(borda);
+
+  return mesh;
+}
+
+// Atualização de toda a sacola
+let paramsAtual = { A: 300, B: 150, H: 400, aba: 75, abertura: 1.0 };
+
+function reconstruirSacola() {
+  // Limpa malhas anteriores
+  while (bagGroup.children.length > 0) {
+    const obj = bagGroup.children[0];
+    bagGroup.remove(obj);
+    if (obj.geometry) obj.geometry.dispose();
+  }
+
+  const mats = criarMateriais();
+
+  const A = paramsAtual.A;
+  const B = paramsAtual.B * paramsAtual.abertura; // abertura controla a largura da base
+  const H = paramsAtual.H;
+  const aba = paramsAtual.aba;
+
+  const hH = H / 2;
+  const hB = B / 2;
+  // Altura do ápice triangular em relação à base
+  const hApex = Math.sqrt(Math.max(10, A * A - hB * hB));
+
+  // Vértices principais da estrutura prismática
+  // Base inferior (no plano Y = 0)
+  const bFrontEsq = new THREE.Vector3(-hH, 0,  hB);
+  const bFrontDir = new THREE.Vector3( hH, 0,  hB);
+  const bBackEsq  = new THREE.Vector3(-hH, 0, -hB);
+  const bBackDir  = new THREE.Vector3( hH, 0, -hB);
+
+  // Ápice superior (Y = hApex, Z = 0)
+  const apexEsq   = new THREE.Vector3(-hH, hApex, 0);
+  const apexDir   = new THREE.Vector3( hH, hApex, 0);
+
+  // 1. FUNDO RETANGULAR (Face 3 do Corpo)
+  const fundoMesh = criarPainelRetangular(bBackEsq, bBackDir, bFrontDir, bFrontEsq, mats.fundo);
+  bagGroup.add(fundoMesh);
+
+  // 2. FACE FRONTAL INCLINADA (Face 2 do Corpo, largura H, comprimento A)
+  const frenteMesh = criarPainelRetangular(bFrontEsq, bFrontDir, apexDir, apexEsq, mats.frente);
+  bagGroup.add(frenteMesh);
+
+  // 3. FACE TRASEIRA INCLINADA (Face 4 do Corpo, largura H, comprimento A)
+  const costasMesh = criarPainelRetangular(bBackDir, bBackEsq, apexEsq, apexDir, mats.costas);
+  bagGroup.add(costasMesh);
+
+  // Vincos das dobras da base
+  bagGroup.add(criarLinha(bFrontEsq, bFrontDir, mats.vinco));
+  bagGroup.add(criarLinha(bBackEsq,  bBackDir,  mats.vinco));
+  bagGroup.add(criarLinha(apexEsq,   apexDir,   mats.vinco));
+
+  // 4. ABAS SUPERIORES COM ALÇA (Aba 1 e Aba 5 do Corpo)
+  const alcaFrontal = criarPainelAlcaComFuro(H, aba, 25, 90, mats.frente, mats.alcaBorda);
+  alcaFrontal.position.set(0, hApex, 0.4);
+  bagGroup.add(alcaFrontal);
+
+  const alcaTraseira = criarPainelAlcaComFuro(H, aba, 25, 90, mats.costas, mats.alcaBorda);
+  alcaTraseira.position.set(0, hApex, -0.4);
+  alcaTraseira.rotation.y = Math.PI;
+  bagGroup.add(alcaTraseira);
+
+  // 5. PEÇA 2: FOLES LATERAIS SANFONADOS (Peças do Fundo na faca)
+  // Cada fole fecha o triângulo lateral e tem vinco central que dobra para dentro
+  // Pontos laterais esquerdos:
+  // Dobra interna do fole: recuo para dentro da sacola (ao longo do eixo X)
+  const recuoFole = (1 - paramsAtual.abertura) * 50 + (paramsAtual.abertura * 15);
+  const centroFoleEsq = new THREE.Vector3(-hH + recuoFole, hApex * 0.45, 0);
+  const centroFoleDir = new THREE.Vector3( hH - recuoFole, hApex * 0.45, 0);
+
+  // Fole Esquerdo (2 triângulos dobrados)
+  bagGroup.add(criarTriangulo(bFrontEsq, apexEsq, centroFoleEsq, mats.foleEsq));
+  bagGroup.add(criarTriangulo(bBackEsq,  apexEsq, centroFoleEsq, mats.foleEsq));
+  bagGroup.add(criarTriangulo(bFrontEsq, bBackEsq, centroFoleEsq, mats.foleEsq));
+
+  // Vincos do fole esquerdo
+  bagGroup.add(criarLinha(bFrontEsq, centroFoleEsq, mats.vinco));
+  bagGroup.add(criarLinha(bBackEsq,  centroFoleEsq, mats.vinco));
+  bagGroup.add(criarLinha(apexEsq,   centroFoleEsq, mats.vinco));
+  bagGroup.add(criarLinha(bFrontEsq, apexEsq,       mats.corte));
+  bagGroup.add(criarLinha(bBackEsq,  apexEsq,       mats.corte));
+  bagGroup.add(criarLinha(bFrontEsq, bBackEsq,       mats.corte));
+
+  // Fole Direito (2 triângulos dobrados)
+  bagGroup.add(criarTriangulo(bFrontDir, apexDir, centroFoleDir, mats.foleDir));
+  bagGroup.add(criarTriangulo(bBackDir,  apexDir, centroFoleDir, mats.foleDir));
+  bagGroup.add(criarTriangulo(bFrontDir, bBackDir, centroFoleDir, mats.foleDir));
+
+  // Vincos do fole direito
+  bagGroup.add(criarLinha(bFrontDir, centroFoleDir, mats.vinco));
+  bagGroup.add(criarLinha(bBackDir,  centroFoleDir, mats.vinco));
+  bagGroup.add(criarLinha(apexDir,   centroFoleDir, mats.vinco));
+  bagGroup.add(criarLinha(bFrontDir, apexDir,       mats.corte));
+  bagGroup.add(criarLinha(bBackDir,  apexDir,       mats.corte));
+  bagGroup.add(criarLinha(bFrontDir, bBackDir,       mats.corte));
+
+  // Atualiza métricas na interface
+  const altTotal = hApex + aba;
+  document.getElementById('mAltura').textContent = altTotal.toFixed(1) + ' mm';
+  document.getElementById('mBase').textContent = paramsAtual.B.toFixed(0) + ' mm';
+  document.getElementById('mLargura').textContent = H.toFixed(0) + ' mm';
+  const largChapa = (aba + A + paramsAtual.B + A + aba).toFixed(0);
+  document.getElementById('mChapa').textContent = largChapa + ' × ' + H.toFixed(0) + ' mm';
+}
+
+// =============================================================================
+// CONTROLES DE INTERFACE
+// =============================================================================
+function syncInputs() {
+  const slA = document.getElementById('slA');
+  const slB = document.getElementById('slB');
+  const slH = document.getElementById('slH');
+  const slAba = document.getElementById('slAba');
+  const slAbertura = document.getElementById('slAbertura');
+
+  function atualizar() {
+    paramsAtual.A = parseFloat(slA.value);
+    paramsAtual.B = parseFloat(slB.value);
+    paramsAtual.H = parseFloat(slH.value);
+    paramsAtual.aba = parseFloat(slAba.value);
+    paramsAtual.abertura = parseFloat(slAbertura.value) / 100;
+
+    document.getElementById('txtA').textContent = paramsAtual.A;
+    document.getElementById('txtB').textContent = paramsAtual.B;
+    document.getElementById('txtH').textContent = paramsAtual.H;
+    document.getElementById('txtAba').textContent = paramsAtual.aba;
+    document.getElementById('txtAbertura').textContent = slAbertura.value;
+
+    reconstruirSacola();
+  }
+
+  slA.addEventListener('input', atualizar);
+  slB.addEventListener('input', atualizar);
+  slH.addEventListener('input', atualizar);
+  slAba.addEventListener('input', atualizar);
+  slAbertura.addEventListener('input', atualizar);
+
+  atualizar();
+}
+
+function setModo(modo) {
+  modoVisualizacao = modo;
+  document.getElementById('modoReal').classList.toggle('ativo', modo === 'real');
+  document.getElementById('modoFaca').classList.toggle('ativo', modo === 'faca');
+  reconstruirSacola();
+}
+
+function setCameraView(vista) {
+  const H = paramsAtual.H;
+  const A = paramsAtual.A;
+  const hApex = Math.sqrt(Math.max(10, A * A - (paramsAtual.B/2) * (paramsAtual.B/2)));
+  const centerY = hApex * 0.55;
+  const dist = Math.max(H, A) * 1.8;
+
+  controls.target.set(0, centerY, 0);
+
+  if (vista === 'frente') {
+    camera.position.set(0, centerY, dist);
+  } else if (vista === 'lateral') {
+    camera.position.set(-dist, centerY, 0);
+  } else if (vista === 'topo') {
+    camera.position.set(0, dist * 1.2, 10);
+  } else if (vista === 'iso') {
+    camera.position.set(dist * 0.75, dist * 0.65, dist * 0.75);
+  }
   controls.update();
 }
 
-// ─── Vistas ─────────────────────────────────────────────────────────────────
-function goView(v){
-  const A=_A, B=_B, H=_H;
-  const D = Math.sqrt(Math.max(0, A*A - (B/2)*(B/2)));
-  const cx=0, cy=H/2, cz=-D/2;
-  const far = Math.max(A,B,H,D)*2.2;
-  controls.target.set(cx,cy,cz);
-  if(v==='front')  camera.position.set(cx,       cy,       cz+far);  // olha a face B
-  if(v==='side')   camera.position.set(cx-far,   cy,       cz);      // olha a face A esq
-  if(v==='top')    camera.position.set(cx,        cy+far,  cz);      // topo
-  if(v==='iso')    camera.position.set(cx+far*.6, cy+far*.5, cz+far*.6);
-  controls.update();
-}
-document.querySelectorAll('.vbtn').forEach(b=>
-  b.addEventListener('click',()=>goView(b.dataset.v)));
-
-// ─── Sliders ────────────────────────────────────────────────────────────────
-['A','B','H'].forEach(id=>{
-  const r=document.getElementById('r'+id);
-  const v=document.getElementById('v'+id);
-  r.addEventListener('input',()=>v.textContent=r.value);
-});
-document.getElementById('btnOk').addEventListener('click',()=>{
-  build(
-    +document.getElementById('rA').value,
-    +document.getElementById('rB').value,
-    +document.getElementById('rH').value
-  );
-});
-
-// ─── Resize ──────────────────────────────────────────────────────────────────
-function resize(){
-  renderer.setSize(innerWidth,innerHeight);
-  camera.aspect=innerWidth/innerHeight;
+// Redimensionamento de janela
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+// Loop de animação
+function animate() {
+  requestAnimationFrame(animate);
+  controls.update();
+  renderer.render(scene, camera);
 }
-window.addEventListener('resize',resize);
-resize();
 
-// ─── Loop ────────────────────────────────────────────────────────────────────
-(function loop(){requestAnimationFrame(loop);controls.update();renderer.render(scene,camera)})();
-
-// ─── Inicial ─────────────────────────────────────────────────────────────────
-build(300,150,400);
+// Inicia
+syncInputs();
+setCameraView('iso');
+animate();
 </script>
 </body>
 </html>
