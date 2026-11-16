@@ -460,7 +460,10 @@ function construirTampaHierarquica(mats) {
 
 function setTampaFold(pivots, t) {
   for (const p of pivots) {
-    const target = -p.target * p.sign;
+    let target = -p.target * p.sign;
+    if (p.panelId === 'panel-7c6543f8' || p.panelId === 'panel-6f5dc360') {
+      target = -(94.0 * Math.PI / 180) * p.sign;
+    }
     const angle = target * t;
     p.pivot.quaternion.setFromAxisAngle(p.axis, angle);
   }
@@ -550,16 +553,22 @@ function reconstruirModelo() {
   tampaEsqObj = construirTampaHierarquica(mats);
   setTampaFold(tampaEsqObj.pivots, params.foldProgress);
 
-  const modelEsq = new THREE.Group();
-  tampaEsqObj.rootGroup.scale.set(scaleB, -scaleY, 1);
-  tampaEsqObj.rootGroup.position.set(-160 * scaleB, 180 * scaleY, 0);
-  modelEsq.add(tampaEsqObj.rootGroup);
-
-  const carrierEsq = new THREE.Group();
-  carrierEsq.position.set(-hH - distExplode, 0, 0);
-  carrierEsq.rotation.y = Math.PI / 2;
-  carrierEsq.add(modelEsq);
-  groupTampaEsq.add(carrierEsq);
+  const wrapperEsq = new THREE.Group();
+  wrapperEsq.matrixAutoUpdate = false;
+  // Mapeamento matemático com determinante positivo (+1) sem reflexão:
+  // X_bag = -hH - distExplode - Z_cad (asas dobram em -Z_cad, entrando na sacola)
+  // Y_bag = (180 - Y_cad) * scaleY   (base de 150mm em Y=0, topo de 60mm no alto)
+  // Z_bag = (160 - X_cad) * scaleB   (alinhado com o fundo B de -75 a +75)
+  const mE = new THREE.Matrix4();
+  mE.set(
+    0,           0,      -1,  -hH - distExplode,
+    0,     -scaleY,       0,   180.0 * scaleY,
+    -scaleB,     0,       0,   160.0 * scaleB,
+    0,           0,       0,   1
+  );
+  wrapperEsq.matrix.copy(mE);
+  wrapperEsq.add(tampaEsqObj.rootGroup);
+  groupTampaEsq.add(wrapperEsq);
 
   // -------------------------------------------------------------------------
   // TAMPA DIREITA (em X = +hH + distExplode):
@@ -567,16 +576,22 @@ function reconstruirModelo() {
   tampaDirObj = construirTampaHierarquica(mats);
   setTampaFold(tampaDirObj.pivots, params.foldProgress);
 
-  const modelDir = new THREE.Group();
-  tampaDirObj.rootGroup.scale.set(scaleB, -scaleY, 1);
-  tampaDirObj.rootGroup.position.set(-160 * scaleB, 180 * scaleY, 0);
-  modelDir.add(tampaDirObj.rootGroup);
-
-  const carrierDir = new THREE.Group();
-  carrierDir.position.set(hH + distExplode, 0, 0);
-  carrierDir.rotation.y = -Math.PI / 2;
-  carrierDir.add(modelDir);
-  groupTampaDir.add(carrierDir);
+  const wrapperDir = new THREE.Group();
+  wrapperDir.matrixAutoUpdate = false;
+  // Mapeamento matemático lado direito (determinante +1):
+  // X_bag = +hH + distExplode + Z_cad (asas dobram para dentro da sacola, em direção a X=0)
+  // Y_bag = (180 - Y_cad) * scaleY   (base no chão Y=0)
+  // Z_bag = (X_cad - 160) * scaleB   (alinhado de -75 a +75)
+  const mD = new THREE.Matrix4();
+  mD.set(
+    0,           0,       1,   hH + distExplode,
+    0,     -scaleY,       0,   180.0 * scaleY,
+    scaleB,      0,       0,  -160.0 * scaleB,
+    0,           0,       0,   1
+  );
+  wrapperDir.matrix.copy(mD);
+  wrapperDir.add(tampaDirObj.rootGroup);
+  groupTampaDir.add(wrapperDir);
 
   // Guias tracejadas quando explodida
   if (params.explode > 0.04) {
