@@ -543,9 +543,10 @@ function reconstruirModelo() {
   // - Asas dobram em +Z do CAD (que apontam para dentro da sacola)
   const distExplode = params.explode * 160;
 
-  // Escalas proporcionais a B e A
+  // Escalas proporcionais: a tampa acompanha a altura real de A e base B
+  const hApex0 = Math.sqrt(Math.max(10, 300 * 300 - 75 * 75)); // 290.4738 mm
   const scaleB = (B / 150.0);
-  const scaleY = (Math.min(hApex * 0.75, 180.0) / 180.0);
+  const scaleY = (hApex / hApex0);
 
   // -------------------------------------------------------------------------
   // TAMPA ESQUERDA (em X = -hH - distExplode):
@@ -612,7 +613,7 @@ function reconstruirModelo() {
   document.getElementById('mAltura').textContent = (hApex + aba).toFixed(0) + ' mm';
   document.getElementById('mBase').textContent = B.toFixed(0) + ' × ' + H.toFixed(0) + ' mm';
   document.getElementById('mTampaBase').textContent = B.toFixed(0) + ' mm (no chão)';
-  document.getElementById('mTampaTop').textContent = (60 * scaleB).toFixed(0) + ' mm (a 180mm alt)';
+  document.getElementById('mTampaTop').textContent = (60 * scaleB).toFixed(0) + ' mm (a ' + (180 * scaleY).toFixed(0) + 'mm alt)';
 }
 
 // =============================================================================

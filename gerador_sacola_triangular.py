@@ -103,33 +103,38 @@ class Params:
 
         if self.fundo_auto:
             # ── Proporções derivadas do original (A=300, B=150, H=400) ──
-            # Referência: fundo_larg=320, dobra=150, cintura=60 → escala por B
+            # A tampa fecha a face lateral triangular de base B e lados A.
+            # Portanto, as medidas verticais escalam com a altura do ápice (hApex),
+            # e as medidas horizontais escalam com a largura do fundo (B).
+            hApex0 = math.sqrt(max(10.0, 300.0**2 - 75.0**2))   # 290.4738 mm
+            hB = self.B / 2.0
+            hApex = math.sqrt(max(10.0, self.A**2 - hB**2))
+
             escB = self.B / 150.0
-            escA = self.A / 300.0
-            escH = self.H / 400.0
+            escY = hApex / hApex0
 
             if self.fundo_larg is None:
-                self.fundo_larg = round(self.A + self.B / 3 * 2 + 20 * escB, 2)
+                self.fundo_larg = round(320.0 * escB, 2)
             if self.fundo_dobra_larg is None:
-                self.fundo_dobra_larg = round(self.B * escB, 2)
+                self.fundo_dobra_larg = round(self.B, 2)
             if self.fundo_cintura is None:
                 self.fundo_cintura = round(60.0 * escB, 2)
             if self.fundo_dobra_y is None:
-                self.fundo_dobra_y = round(180.0 * escH, 2)
+                self.fundo_dobra_y = round(180.0 * escY, 2)
             if self.fundo_aba_alt is None:
-                self.fundo_aba_alt = round(15.0 * escH, 2)
+                self.fundo_aba_alt = round(15.0 * escB, 2)
             if self.fundo_aba_recuo is None:
                 self.fundo_aba_recuo = round(11.72 * escB, 2)
             if self.ombro_y is None:
-                self.ombro_y = round(165.0 * escH, 2)
+                self.ombro_y = round(165.0 * escY, 2)
             if self.lado_x is None:
-                self.lado_x = round(73.29 * escA, 2)
+                self.lado_x = round(73.29 * escB, 2)
             if self.lado_y0 is None:
-                self.lado_y0 = round(71.13 * escH, 2)
+                self.lado_y0 = round(71.13 * escY, 2)
             if self.cola_y is None:
-                self.cola_y = round(155.66 * escH, 2)
+                self.cola_y = round(155.66 * escY, 2)
             if self.cola_x is None:
-                self.cola_x = round(37.37 * escA, 2)
+                self.cola_x = round(37.37 * escB, 2)
         else:
             # Preenche defaults originais para campos não fornecidos
             defaults = dict(
